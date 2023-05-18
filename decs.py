@@ -42,3 +42,10 @@ with open("sample.json", "w", encoding='utf8') as outfile:
 # audio.save('voice/example1.mp3')
 # os.system("start voice/example.mp3")
 # //
+#
+# for i in range(len(zawartosc)):
+#     mytext = example[i]
+#     audio = gTTS(text=mytext, lang="en", slow=False)
+#     audio.save(f'voice/example{i}.mp3')
+def speak():
+    os.system("start voice/example1.mp3")

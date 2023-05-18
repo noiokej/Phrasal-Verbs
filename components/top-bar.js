@@ -4,7 +4,7 @@ import {View, StyleSheet, Text} from "react-native";
 const TopBar = () => {
     return (
         <View style={styles.topBarContainer}>
-            <Text style={styles.topBarText}>costam</Text>
+            <Text style={styles.topBarText}>Menu</Text>
         </View>
     )
 }
