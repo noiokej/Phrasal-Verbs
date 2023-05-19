@@ -1,9 +1,8 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View } from 'react-native';
-import dict from "./dict";
-import Words from "./dict";
+import Words from "./components/decks";
 import TopBar from "./components/top-bar";
-// import Button from 'react-bootstrap/Button';
+
 
 export default function App() {
 
