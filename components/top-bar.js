@@ -1,27 +1,26 @@
 import {View, StyleSheet, Text} from "react-native";
+import Menu from "./menu";
 
 
 const TopBar = () => {
     return (
         <View style={styles.topBarContainer}>
-            <Text style={styles.topBarText}>Menu</Text>
+            <Menu/>
         </View>
     )
 }
 
 const styles = StyleSheet.create({
     topBarContainer: {
-        backgroundColor: '#3c3561',
+        // backgroundColor: '#3c3561',
+        backgroundColor: '#4d347d',
         flex: 1,
         width: '100%',
         justifyContent: 'center',
-        alignItems: 'center'
+        alignItems: 'center',
+        alignContent: 'center',
     },
 
-    topBarText: {
-        fontSize: 20,
-        color: 'white',
-    }
 })
 
 export default TopBar
