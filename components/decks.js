@@ -5,16 +5,14 @@ import {FontAwesome5} from "@expo/vector-icons";
 import {LinearGradient} from "expo-linear-gradient";
 import * as Location from "expo-location";
 import * as FileSystem from "expo-file-system";
+import StartPage from "./start-page";
 
 
 var json = require('../phrasalverbs.json'); //(with path)
 const decks = json
 
-const Words = () => {
+const Words = ({theme, setTheme}) => {
 
-    // useEffect(() => {
-    //     readArrayFromFile();
-    // }, []);
     const [isHighlighted, setIsHighlighted] = useState('none');
     const [word, setWord] = useState('');
 
@@ -110,7 +108,7 @@ const Words = () => {
 
             const updatedArray = array.map((item) => {
             if (item.id === word.id) {
-                const updatedDegree = known ? item.degree + 1 : 0;
+                const updatedDegree = known ? item.degree + 1 : item.degree;
                 return { ...item, degree: updatedDegree };
             }
             return item;
@@ -142,6 +140,11 @@ const Words = () => {
     const darkerDark = '#1d1b22'
     const darkText = '#9890a5'
 
+    const light = '#dad0e8'
+    const backgroudLight = '#f5f1fa'
+    const lightButtonColor = '#242129'
+    const lightTextInButton = '#4d347d'
+
     const styles = StyleSheet.create({
         container: {
             width: '100%',
@@ -155,16 +158,12 @@ const Words = () => {
             width: '100%',
             height: '80%',
             flex: 3,
-            backgroundColor: darkerDark
+            backgroundColor: theme === 'dark' ? darkerDark : backgroudLight
         },
         wordContainer: {
             width: '90%',
-
-            // borderColor: '#9890a5',
-            // borderBottomWidth: 1,
             alignItems: 'center',
-            // // backgroundColor: '#242129',
-            backgroundColor: dark,
+            backgroundColor: theme === 'dark' ? dark : light,
             justifyContent: 'center',
             flex: 3,
 
@@ -177,7 +176,7 @@ const Words = () => {
         },
         wordText: {
             fontSize: 40,
-            color: darkText,
+            color: theme === 'dark' ? darkText : dark,
             textAlign: 'center',
         },
         meaningContainer: {
@@ -187,7 +186,7 @@ const Words = () => {
             width: '90%',
             alignItems: 'center',
             justifyContent: 'center',
-            backgroundColor: dark,
+            backgroundColor: theme === 'dark' ? dark : light,
             flex: 2,
             paddingLeft: 10,
             paddingRight: 10,
@@ -203,7 +202,7 @@ const Words = () => {
             marginRight: '5%',
             textAlign: 'center',
             // color: '#b4a9ec',
-            color: darkText,
+            color: theme === 'dark' ? darkText : dark,
         },
         meaningDescription: {
             position: 'absolute',
@@ -211,12 +210,11 @@ const Words = () => {
         },
         exampleContainer: {
             borderWidth: isHighlighted ? 0 : 1,
-            // borderTopWidth: 1,
             borderColor: '#4d347d',
             width: '95%',
             alignItems: 'center',
             justifyContent: 'center',
-            backgroundColor: dark,
+            backgroundColor: theme === 'dark' ? dark : light,
             flex:2,
             paddingLeft: 10,
             paddingRight: 10,
@@ -229,7 +227,7 @@ const Words = () => {
             display: isHighlighted ? 'none' : 'flex',
             fontSize: 20,
             textAlign: 'center',
-            color: darkText,
+            color: theme === 'dark' ? darkText : dark,
         },
         exampleDescription: {
             position: 'absolute',
@@ -238,26 +236,28 @@ const Words = () => {
         buttonsContainer: {
             flexDirection: 'row',
             justifyContent: 'center',
-            flex:1
+            flex:1,
+            borderRadius: 11,
         },
         redButton: {
             alignItems: 'center',
             justifyContent: 'center',
-            padding: 10,
+            padding: 5,
+
         },
         greenButton: {
             alignItems: 'center',
             justifyContent: 'center',
-            padding: 10,
+            padding: 5,
         },
         redButtonText: {
             fontSize: 20,
-            color: '#c7a0a0',
+            color: theme === 'dark' ? '#c7a0a0' : '#f1d7d7',
             padding: 10,
         },
         greenButtonText: {
             fontSize: 20,
-            color: '#a3d9a6',
+            color: theme === 'dark' ? '#94cb97' : '#d3f6d5',
             padding: 10,
         },
         sample: {
@@ -271,7 +271,8 @@ const Words = () => {
         },
         sampleText: {
             fontSize: 15,
-            margin: 5
+            margin: 5,
+            color: theme === 'dark' ? 'black' : light
         },
         iconStyle: {
             marginRight: '30%',
@@ -293,29 +294,7 @@ const Words = () => {
             paddingLeft: 15,
             paddingBottom: 5,
         },
-        start: {
-            // backgroundColor: '#29253e',
-            backgroundColor: 'white',
-            flex: 11,
-            width: '100%',
-            justifyContent: 'center',
-            alignItems: 'center',
-        },
-        startButton: {
-            // overflow: 'visible',
-            backgroundColor: '#b4a9ec',
-            padding: 20,
-            margin: 10,
-            borderRadius: 10,
-            shadowColor: 'red',
-            shadowOffset: { width: 1, height: 1 },
-            shadowOpacity: 5,
-            elevation: 10,
-        },
-        startButtonText: {
-            fontSize: 20,
-            // color: '#e0daf8',
-        }
+
     })
 
     if (word) {
@@ -329,13 +308,13 @@ const Words = () => {
                         <Text style={styles.sampleText}><FontAwesome5 name="play" style={styles.iconStyle}/>Speech example</Text>
                     </TouchableOpacity>
                 </View>
-                <TouchableHighlight underlayColor='#413e53' style={styles.meaningContainer} onPress={toggleHighlighted}>
+                <TouchableHighlight underlayColor={theme === 'dark' ? '#413e53' : backgroudLight} style={styles.meaningContainer} onPress={toggleHighlighted}>
                     <>
                         <Text style={styles.meaningText}>{word.meaning}</Text>
                         <Text style={styles.meaningDescription}>Znaczenie</Text>
                     </>
                 </TouchableHighlight>
-                <TouchableHighlight underlayColor='#413e53' style={styles.exampleContainer} onPress={toggleHighlighted}>
+                <TouchableHighlight underlayColor={theme === 'dark' ? '#413e53' : backgroudLight} style={styles.exampleContainer} onPress={toggleHighlighted}>
                     <>
                         <Text style={styles.exampleText}>{word.example}</Text>
                         <Text style={styles.exampleDescription}>Przykład</Text>
@@ -344,12 +323,13 @@ const Words = () => {
                 <FontAwesome5 name="hand-point-left" style={styles.handIconStyle} onPress={toggleHighlighted}/>
                 <View style={styles.buttonsContainer}>
                     <LinearGradient
-                        colors={['#581616', '#7d2424', '#581616']}
-                        style={{ flex: 1 }}
+                        colors={theme === 'dark' ? ['#581616', '#7d2424', '#581616'] : ['#a01b1b', '#b43a3a', '#9c1717']}
+
+                        style={{ flex: 1, borderRadius: 11, margin: 5 }}
                         >
                         <TouchableOpacity style={styles.redButton} onPress={async () => {
                             setIsHighlighted('none')
-                            await changeDegree(word, false)
+                            await nextWord(word, false)
                         }
                         }>
                             <Text style={styles.redButtonText}>Nie znam</Text>
@@ -357,8 +337,8 @@ const Words = () => {
                     </LinearGradient>
 
                     <LinearGradient
-                        colors={['#104212', '#1d7221', '#104212']}
-                        style={{ flex: 1 }}
+                        colors={theme === 'dark' ? ['#104212', '#155518', '#104212'] : ['#147d18', '#1b9921', '#19841e']}
+                        style={{ flex: 1, borderRadius: 11, margin: 5}}
                         >
                         <TouchableOpacity style={styles.greenButton} onPress={async () => {
                             setIsHighlighted('none')
@@ -375,16 +355,11 @@ const Words = () => {
 
     )
     } else {
-        return (
-            <View style={styles.start}>
-                <TouchableOpacity style={styles.startButton}>
-                    <Text style={styles.startButtonText} onPress={() => {
-                        iterowanie()
-                    }
-                    }>Rozpocznij</Text>
-                </TouchableOpacity>
-            </View>
-            )
+        return <StartPage
+            iterowanie = {iterowanie}
+            theme={theme}
+            setTheme={setTheme}
+        />
     }
 }
 

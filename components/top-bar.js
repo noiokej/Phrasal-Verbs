@@ -2,10 +2,14 @@ import {View, StyleSheet, Text} from "react-native";
 import Menu from "./menu";
 
 
-const TopBar = () => {
+const TopBar = (props) => {
+    console.log(props, 'topbar')
     return (
         <View style={styles.topBarContainer}>
-            <Menu/>
+            <Menu
+                theme = {props.theme}
+                setTheme = {props.setTheme}
+            />
         </View>
     )
 }
