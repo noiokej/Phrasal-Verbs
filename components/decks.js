@@ -6,8 +6,9 @@ import {LinearGradient} from "expo-linear-gradient";
 import * as Location from "expo-location";
 import * as FileSystem from "expo-file-system";
 import StartPage from "./start-page";
+import { NavigationContainer } from '@react-navigation/native';
 
-
+// make up zle
 var json = require('../phrasalverbs.json'); //(with path)
 const decks = json
 
@@ -16,34 +17,47 @@ const Words = ({theme, setTheme}) => {
     const [isHighlighted, setIsHighlighted] = useState('none');
     const [word, setWord] = useState('');
 
+    // if (!word) {
+    //     const draw = async () => {
+    //         const newArray = await readArrayFromFile()
+    //         const newWord = await drawRandom(newArray);
+    //         await setWord(newWord)
+    //     }
+    //     draw()
+    // }
+
     const toggleHighlighted = () => {
         setIsHighlighted(!isHighlighted);
     };
 
     const iterowanie = async () => {
         try {
-            const array = []
-            let i = 0
-            for (const [key, value] of Object.entries(decks)) {
-                i+=1
-                array.push({verb:key, meaning:value[0], example:value[1], degree:0, id:i})
+            await checkPermission()
+            if (await checkFileExists()) {
+                console.log('istnieje')
+            } else {
+                console.log('nie istnieje')
+                const array = []
+                let i = 0
+                for (const [key, value] of Object.entries(decks)) {
+                    i+=1
+                    array.push({verb:key, meaning:value[0], example:value[1], degree:0, id:i})
+                    await saveArrayToFile(array, 'Decks')
+                    console.log("ITEROWANIE")
+                }
             }
-            console.log("ITEROWANIE")
-            await saveArrayToFile(array, 'Decks')
             const newArray = await readArrayFromFile()
             const newWord = await drawRandom(newArray);
             await setWord(newWord)
         } catch (e) {
             console.log('blad w iterowniu', e)
         }
-
     }
 
     const drawRandom = (array) => {
         try {
             // const random = Math.floor(Math.random() * array.length)
             const random = Math.floor(Math.random() * 3)
-
             console.log('DRAW RANDOm')
             return array[random]
         } catch (e) {
@@ -62,6 +76,17 @@ const Words = ({theme, setTheme}) => {
         }catch (e){
             console.log(e)}
     }
+
+    const checkFileExists = async () => {
+        try {
+            const fileInfo = await FileSystem.getInfoAsync(FileSystem.documentDirectory + 'Decks');
+            console.log(fileInfo.exists, 'CZYISTENIEJE')
+            return fileInfo.exists;
+
+        } catch (error) {
+            console.error('Błąd podczas sprawdzania pliku:', error);
+        }
+    };
 
     const saveArrayToFile = async (array) => {
         try {
