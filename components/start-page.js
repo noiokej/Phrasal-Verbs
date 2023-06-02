@@ -1,14 +1,14 @@
 import {Text, TouchableOpacity, View, StyleSheet} from "react-native";
+import ThemeContext from "../context/themeContext";
+import {useContext} from "react";
+import {useNavigation} from "@react-navigation/native";
+import {dark, darkerDark, darkText, light, darkButtonColor, darkTextInButton, backgroudLight, lightButtonColor, lightTextInButton} from "../utils/colors"
 
 
-const StartPage = ({iterowanie, theme, setTheme}) => {
-    const dark = '#242129'
-    const darkButtonColor = '#4d347d'
-    const darkTextInButton = '#dad0e8'
+const StartPage = ({iterowanie, letter}) => {
+    const navigation = useNavigation();
+    const { theme, toggleTheme } = useContext(ThemeContext);
 
-    const light = '#dad0e8'
-    const lightButtonColor = '#242129'
-    const lightTextInButton = '#4d347d'
 
     const styles = StyleSheet.create({
         start: {
@@ -38,11 +38,16 @@ const StartPage = ({iterowanie, theme, setTheme}) => {
 
     return (
         <View style={styles.start}>
+            {letter &&
+            <Text>{letter}</Text>
+            }
             <TouchableOpacity style={styles.startButton}>
-                <Text style={styles.startButtonText} onPress={() => {
-                    iterowanie()
-                }
-                }>Rozpocznij</Text>
+                <Text style={styles.startButtonText} onPress={iterowanie}
+                    // onPress={() => {
+                    //     iterowanie()
+                    // // navigation.navigate("Words")
+                    // }}
+                >Rozpocznij</Text>
             </TouchableOpacity>
         </View>
     )

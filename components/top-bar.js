@@ -3,23 +3,50 @@ import { Ionicons } from '@expo/vector-icons';
 
 import {TouchableHighlight} from "react-native";
 import Menu from "./menu";
+import ThemeContext from "../context/themeContext";
+import {useContext, useState} from "react";
+import {useNavigation, useNavigationState, StackActions} from "@react-navigation/native";
 
 
-const TopBar = ({theme, setTheme, openMenu, showMenu}) => {
 
 
-    const handleThemeChange = () => {
-        setTheme(theme === 'light' ? 'dark' : 'light')
+const TopBar = ({ openMenu, showMenu}) => {
+    const {theme, toggleTheme} = useContext(ThemeContext)
+    // const [navigationState, setNavigationState] = useState(null)
+    const navigationState = useNavigationState((state) => state);
+
+    const checkStateAndNavigate = () => {
+        if (navigationState.routes[navigationState.index].name === "Menu") {
+        navigateToHome();
+    } else {
+        navigation.navigate('Menu');
     }
+    };
+
+
+
+    const navigateToHome = () => {
+        navigation.goBack()
+    };
+
+    // const handleThemeChange = () => {
+    //     setTheme(theme === 'light' ? 'dark' : 'light')
+    // }
     const brighterLight = '#f5f1fa'
+    const navigation = useNavigation();
 
     return (
+
         <View style={styles.topBarContainer}>
             <View style={styles.menu}>
                 <>
-                    <TouchableHighlight style={styles.changeTheme} underlayColor="transparent" onPress={handleThemeChange}><Ionicons name={theme === 'dark' ? 'sunny-outline' : 'moon-outline'} size={30} color={'#e1d0fc'}/></TouchableHighlight>
+                    <TouchableHighlight style={styles.changeTheme} underlayColor="transparent" onPress={toggleTheme}><Ionicons name={theme === 'dark' ? 'sunny-outline' : 'moon-outline'} size={30} color={'#e1d0fc'}/></TouchableHighlight>
 
-                    <TouchableHighlight style={styles.menuText} underlayColor="transparent" onPress={openMenu}><Text><Ionicons name="menu" size={30} color={'#e1d0fc'} /></Text></TouchableHighlight>
+                    <TouchableHighlight style={styles.menuText} underlayColor="transparent" onPress={checkStateAndNavigate}>
+                        <Text>
+                            <Ionicons name="menu" size={30} color={'#e1d0fc'} />
+                        </Text>
+                    </TouchableHighlight>
 
                 </>
             </View>
@@ -32,7 +59,7 @@ const styles = StyleSheet.create({
         // backgroundColor: '#3c3561',
         backgroundColor: '#4d347d',
         flex: 1,
-        width: '100%',
+        width: '110%',
         justifyContent: 'center',
         alignItems: 'center',
         alignContent: 'center',

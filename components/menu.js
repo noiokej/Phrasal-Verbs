@@ -1,12 +1,14 @@
 import {View, Text, StyleSheet, TouchableHighlight} from "react-native";
-import {useState} from "react";
+import {useContext, useState} from "react";
 import { Ionicons } from '@expo/vector-icons';
 import AlphabeticalOrder from "./alphabetical-order";
 import ListOfAllWords from "./list-of-all-words";
 import KnownWords from "./known-words";
+import { useNavigation } from "@react-navigation/native";
+import ThemeContext from "../context/themeContext";
+const Menu = ({ openMenu}) => {
 
-const Menu = ({theme, openMenu}) => {
-
+    const { theme, toggleTheme } = useContext(ThemeContext);
     const [alphabetIsOpen, setAlphabetIsOpen] = useState(false);
     const [listOfAllWordsIsOpen, setListOfAllWordsIsOpen] = useState(false);
     const [knownWordsIsOpen, setKnownWordsIsOpen] = useState(false);
@@ -19,6 +21,22 @@ const Menu = ({theme, openMenu}) => {
     const brighterLight = '#f5f1fa'
     const lightButtonColor = '#242129'
     const purple = '#4d347d'
+    const itemText = "#e1d0fc"
+
+    const navigation = useNavigation();
+
+    const navigateToHome = () => {
+        navigation.goBack()
+    };
+
+    const navigateToOtherComponent = () => {
+        // Pobierz obiekt nawigacji
+        const navigation = useNavigation();
+
+        // Wywołaj funkcję nawigacji do innego komponentu
+        navigation.navigate("Decks");
+    };
+
 
     const styles = StyleSheet.create({
         menu: {
@@ -56,7 +74,7 @@ const Menu = ({theme, openMenu}) => {
         menuTitle: {
             fontSize: 25,
             marginBottom: 10,
-            color: theme === 'dark' ? darkLightText : purple,
+            color: theme === 'dark' ? itemText : purple,
             fontWeight: 'bold',
             textDecorationLine: 'underline',
         },
@@ -87,16 +105,19 @@ const Menu = ({theme, openMenu}) => {
             setListOfAllWordsIsOpen(false)
             setAlphabetIsOpen(false)
         }
+
     }
 
     return (
         <View style={styles.menu}>
-            <Text style={styles.menuTitle} onPress={openMenu}>MENU</Text>
+            <Text style={styles.menuTitle} onPress={openMenu}>{alphabetIsOpen ? "Wybierz literę" : "MENU"}</Text>
             <View style={styles.menuContainer}>
                 {!alphabetIsOpen && !listOfAllWordsIsOpen && !knownWordsIsOpen ? <>
                 <TouchableHighlight
                     style={styles.menuContainerItem}
-                    onPress={openMenu}>
+                    // onPress={openMenu}
+                    onPress={() => navigation.navigate("Words")}
+                >
                     <Text style={styles.menuContainerItemText}>Losuj słowa</Text>
                 </TouchableHighlight>
                 <TouchableHighlight
@@ -116,13 +137,14 @@ const Menu = ({theme, openMenu}) => {
                 </TouchableHighlight>
                 </>
                : null}
-                {alphabetIsOpen ? <AlphabeticalOrder/> : null }
-                {listOfAllWordsIsOpen ? <ListOfAllWords/> : null}
+                {alphabetIsOpen ? <AlphabeticalOrder theme={theme}/> : null }
+                {listOfAllWordsIsOpen ? <ListOfAllWords theme={theme}/> : null}
                 {knownWordsIsOpen ? <KnownWords/> : null}
 
                 <TouchableHighlight
                     style={styles.backIcon}
                     onPress={handlePress}>
+                    {/*// onPress={navigateToHome}>*/}
                     <Text>
                         <Ionicons name="return-down-back" size={30} color={theme === 'dark' ? darkLightText : dark} />
                     </Text>

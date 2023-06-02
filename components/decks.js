@@ -1,30 +1,34 @@
-import {useEffect, useState} from "react";
+import {useContext, useEffect, useState} from "react";
 import {StyleSheet, Text, TouchableHighlight, TouchableOpacity, View} from "react-native";
 import * as Speech from "expo-speech";
-import {FontAwesome5} from "@expo/vector-icons";
+import {FontAwesome5, FontAwesome} from "@expo/vector-icons";
 import {LinearGradient} from "expo-linear-gradient";
 import * as Location from "expo-location";
 import * as FileSystem from "expo-file-system";
 import StartPage from "./start-page";
-import { NavigationContainer } from '@react-navigation/native';
+import {useNavigation} from "@react-navigation/native";
+import ThemeContext from "../context/themeContext";
+import {addFavourite} from "./favourite";
+import {checkPermission, checkFileExists, saveArrayToFile, readArrayFromFile} from "../utils/fileOperations"
+import {dark, darkerDark, darkText, light, backgroudLight, lightButtonColor, lightTextInButton} from "../utils/colors"
+
 
 // make up zle
-var json = require('../phrasalverbs.json'); //(with path)
+var json = require('../sorted_data.json'); //(with path)
 const decks = json
 
-const Words = ({theme, setTheme}) => {
+const Words = ({ route }) => {
 
     const [isHighlighted, setIsHighlighted] = useState('none');
     const [word, setWord] = useState('');
+    const { theme, toggleTheme } = useContext(ThemeContext);
+    const [array, setArray] = useState(null)
 
-    // if (!word) {
-    //     const draw = async () => {
-    //         const newArray = await readArrayFromFile()
-    //         const newWord = await drawRandom(newArray);
-    //         await setWord(newWord)
-    //     }
-    //     draw()
-    // }
+
+    const letter = route?.params?.letter;
+
+    console.log(letter, 'arrayOOOOO')
+
 
     const toggleHighlighted = () => {
         setIsHighlighted(!isHighlighted);
@@ -33,15 +37,18 @@ const Words = ({theme, setTheme}) => {
     const iterowanie = async () => {
         try {
             await checkPermission()
+
             if (await checkFileExists()) {
                 console.log('istnieje')
+
+
             } else {
                 console.log('nie istnieje')
                 const array = []
                 let i = 0
                 for (const [key, value] of Object.entries(decks)) {
-                    i+=1
                     array.push({verb:key, meaning:value[0], example:value[1], degree:0, id:i})
+                    i+=1
                     await saveArrayToFile(array, 'Decks')
                     console.log("ITEROWANIE")
                 }
@@ -49,97 +56,74 @@ const Words = ({theme, setTheme}) => {
             const newArray = await readArrayFromFile()
             const newWord = await drawRandom(newArray);
             await setWord(newWord)
+            await setArray(newArray)
         } catch (e) {
             console.log('blad w iterowniu', e)
         }
     }
 
-    const drawRandom = (array) => {
+    const drawRandom = (array, word) => {
+        // console.log(word, "WORDDD")
         try {
             // const random = Math.floor(Math.random() * array.length)
-            const random = Math.floor(Math.random() * 3)
-            console.log('DRAW RANDOm')
-            return array[random]
+            if (letter) {
+                // console.log(array[1], array[2], 'arr 1 i 2')
+                // console.log(word, "WORD")
+                // const firstEl = array.find(el => el.verb[0] === letter)
+                // const lastEl = array.reverse().find(el => el.verb[0] === letter)
+                const verbs = array.filter(el => el.verb[0] === letter)
+
+                const firstEl = verbs[0].id
+                const lastEl = verbs[verbs.length - 1].id
+
+
+                let random = Math.floor(Math.random() * (lastEl - firstEl + 1)) + firstEl;
+
+
+                if (firstEl !== lastEl) {
+                    while (random === word?.id) {
+                        random = Math.floor(Math.random() * (firstEl - lastEl + 1)) + lastEl;
+                    }
+                } else {
+                    random = Math.floor(Math.random() * (firstEl - lastEl + 1)) + lastEl;
+                }
+
+                return array[random]
+
+            } else {
+                const random = Math.floor(Math.random() * 369)
+                console.log('DRAW RANDOm')
+                return array[random]
+            }
+
         } catch (e) {
             console.log('blad w drawRandom', e)
         }
     }
 
-    const checkPermission = async () => {
-        try {
-            // Sprawdź uprawnienia do odczytu na urządzeniu
-            let {status} = await Location.requestForegroundPermissionsAsync();
-            if (status !== 'granted') {
-                console.log('Brak uprawnień do odczytu plików.');
-                return null;
-            }
-        }catch (e){
-            console.log(e)}
-    }
-
-    const checkFileExists = async () => {
-        try {
-            const fileInfo = await FileSystem.getInfoAsync(FileSystem.documentDirectory + 'Decks');
-            console.log(fileInfo.exists, 'CZYISTENIEJE')
-            return fileInfo.exists;
-
-        } catch (error) {
-            console.error('Błąd podczas sprawdzania pliku:', error);
-        }
-    };
-
-    const saveArrayToFile = async (array) => {
-        try {
-            // await checkPermission()
-            const fileUri = FileSystem.documentDirectory + 'Decks';
-            // Konwertuj tablicę na format tekstowy
-            const arrayText = JSON.stringify(array);
-            // Zapisz tablicę do pliku
-            await FileSystem.writeAsStringAsync(fileUri, arrayText);
-
-            console.log('Tablica została zapisana do pliku.');
-            // return array
-        } catch (error) {
-            console.log('Wystąpił błąd podczas zapisywania tablicy do pliku:', error);
-        }
-    };
-
-    const readArrayFromFile = async () => {
-    try {
-        // await checkPermission()
-        const fileUri = FileSystem.documentDirectory + 'Decks';
-
-        // Odczytaj zawartość pliku
-        const fileContent = await FileSystem.readAsStringAsync(fileUri);
-
-        // Konwertuj tekst na tablicę
-        const array = JSON.parse(fileContent);
-        console.log(array[1], 'pierwszy obiekt z read arr')
-        console.log('TABLICA ZOSTALA ODCZYTANA Z PLIKU')
-        return array
-
-    } catch (error) {
-        console.log('Wystąpił błąd podczas odczytywania tablicy z pliku:', error);
-        return null;
-    }
-}
 
     const changeDegree = async (word, known) => {
         try {
-            const fileUri = FileSystem.documentDirectory + 'Decks';
 
-            const fileContent = await FileSystem.readAsStringAsync(fileUri);
-            const array = JSON.parse(fileContent);
+            // const fileUri = FileSystem.documentDirectory + 'Decks';
+            //
+            // const fileContent = await FileSystem.readAsStringAsync(fileUri);
+            // const array = JSON.parse(fileContent);
+
+            // console.log(array, "changedegree")
 
             const updatedArray = array.map((item) => {
             if (item.id === word.id) {
                 const updatedDegree = known ? item.degree + 1 : item.degree;
+                console.log(item, 'ITEM')
+                console.log(known, 'known')
                 return { ...item, degree: updatedDegree };
             }
+
             return item;
             });
-
             await saveArrayToFile(updatedArray);
+            setArray(updatedArray)
             return updatedArray;
         } catch (error) {
             console.log('Wystąpił błąd podczas zmiany stopni:', error);
@@ -147,10 +131,10 @@ const Words = ({theme, setTheme}) => {
         }
 };
     const nextWord = async (word, known) => {
-        const Array = await changeDegree(word, known);
-        await drawRandom(Array);
+        await changeDegree(word, known);
+        // await drawRandom(Array);
         const newArray = await readArrayFromFile();
-        const newWord = await drawRandom(newArray);
+        const newWord = await drawRandom(newArray, word);
         await setWord(newWord)
     }
 
@@ -161,14 +145,7 @@ const Words = ({theme, setTheme}) => {
         voice: "en-gb-x-gbb-local" //spoko meski chyba najlepszy
         });
     };
-    const dark = '#242129'
-    const darkerDark = '#1d1b22'
-    const darkText = '#9890a5'
 
-    const light = '#dad0e8'
-    const backgroudLight = '#f5f1fa'
-    const lightButtonColor = '#242129'
-    const lightTextInButton = '#4d347d'
 
     const styles = StyleSheet.create({
         container: {
@@ -305,6 +282,11 @@ const Words = ({theme, setTheme}) => {
             padding: 20,
             fontSize: 15,
         },
+        starIcon: {
+            position: 'absolute',
+            right: 20,
+            top: 20,
+        },
         handIconStyle: {
             position: 'absolute',
             right: '8%',
@@ -328,23 +310,26 @@ const Words = ({theme, setTheme}) => {
             <View style={styles.contentContainer}>
                 <View style={styles.wordContainer}>
                     <Text style={styles.wordText}>{word.verb}</Text>
-                    <Text style={styles.knowledgeDegree}>Znajomość: {word.degree}</Text>
+                    <Text style={styles.knowledgeDegree}>Znajomość: {word.degree} id: {word.id}</Text>
                     <TouchableOpacity style={styles.sample} onPress={() => speak(word.example)}>
                         <Text style={styles.sampleText}><FontAwesome5 name="play" style={styles.iconStyle}/>Speech example</Text>
                     </TouchableOpacity>
+                    <TouchableOpacity onPress={() => {addFavourite(word)}} style={styles.starIcon}>
+                        <FontAwesome name="star-o" size={30} color="black" />
+                    </TouchableOpacity>
                 </View>
-                <TouchableHighlight underlayColor={theme === 'dark' ? '#413e53' : backgroudLight} style={styles.meaningContainer} onPress={toggleHighlighted}>
+                <TouchableOpacity underlayColor={theme === 'dark' ? '#413e53' : backgroudLight} style={styles.meaningContainer} onPress={toggleHighlighted}>
                     <>
                         <Text style={styles.meaningText}>{word.meaning}</Text>
                         <Text style={styles.meaningDescription}>Znaczenie</Text>
                     </>
-                </TouchableHighlight>
-                <TouchableHighlight underlayColor={theme === 'dark' ? '#413e53' : backgroudLight} style={styles.exampleContainer} onPress={toggleHighlighted}>
+                </TouchableOpacity>
+                <TouchableOpacity underlayColor={theme === 'dark' ? '#413e53' : backgroudLight} style={styles.exampleContainer} onPress={toggleHighlighted}>
                     <>
                         <Text style={styles.exampleText}>{word.example}</Text>
                         <Text style={styles.exampleDescription}>Przykład</Text>
                     </>
-                </TouchableHighlight>
+                </TouchableOpacity>
                 <FontAwesome5 name="hand-point-left" style={styles.handIconStyle} onPress={toggleHighlighted}/>
                 <View style={styles.buttonsContainer}>
                     <LinearGradient
@@ -380,11 +365,19 @@ const Words = ({theme, setTheme}) => {
 
     )
     } else {
-        return <StartPage
-            iterowanie = {iterowanie}
-            theme={theme}
-            setTheme={setTheme}
-        />
+        return (
+
+                letter ? <StartPage
+                iterowanie = {iterowanie}
+                letter={letter}
+                /> :
+                <StartPage
+                iterowanie = {iterowanie}
+
+                />
+
+        )
+
     }
 }
 
