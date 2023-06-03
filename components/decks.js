@@ -3,14 +3,14 @@ import {StyleSheet, Text, TouchableHighlight, TouchableOpacity, View} from "reac
 import * as Speech from "expo-speech";
 import {FontAwesome5, FontAwesome} from "@expo/vector-icons";
 import {LinearGradient} from "expo-linear-gradient";
-import * as Location from "expo-location";
+// import * as Location from "expo-location";
 import * as FileSystem from "expo-file-system";
 import StartPage from "./start-page";
-import {useNavigation} from "@react-navigation/native";
+// import {useNavigation} from "@react-navigation/native";
 import ThemeContext from "../context/themeContext";
 import {addFavourite} from "./favourite";
 import {checkPermission, checkFileExists, saveArrayToFile, readArrayFromFile} from "../utils/fileOperations"
-import {dark, darkerDark, darkText, light, backgroudLight, lightButtonColor, lightTextInButton} from "../utils/colors"
+import {dark, darkerDark, darkText, light, backgroudLight, lightButtonColor, lightTextInButton, purple} from "../utils/colors"
 
 
 // make up zle
@@ -72,13 +72,10 @@ const Words = ({ route }) => {
                 // const firstEl = array.find(el => el.verb[0] === letter)
                 // const lastEl = array.reverse().find(el => el.verb[0] === letter)
                 const verbs = array.filter(el => el.verb[0] === letter)
-
                 const firstEl = verbs[0].id
                 const lastEl = verbs[verbs.length - 1].id
 
-
                 let random = Math.floor(Math.random() * (lastEl - firstEl + 1)) + firstEl;
-
 
                 if (firstEl !== lastEl) {
                     while (random === word?.id) {
@@ -180,6 +177,7 @@ const Words = ({ route }) => {
             fontSize: 40,
             color: theme === 'dark' ? darkText : dark,
             textAlign: 'center',
+            fontFamily: 'Montserrat',
         },
         meaningContainer: {
             // borderWidth: 1,
@@ -205,10 +203,12 @@ const Words = ({ route }) => {
             textAlign: 'center',
             // color: '#b4a9ec',
             color: theme === 'dark' ? darkText : dark,
+            fontFamily: 'Montserrat',
         },
         meaningDescription: {
             position: 'absolute',
             top: '5%',
+            fontFamily: 'Montserrat',
         },
         exampleContainer: {
             borderWidth: isHighlighted ? 0 : 1,
@@ -230,10 +230,12 @@ const Words = ({ route }) => {
             fontSize: 20,
             textAlign: 'center',
             color: theme === 'dark' ? darkText : dark,
+            fontFamily: 'Montserrat'
         },
         exampleDescription: {
             position: 'absolute',
             top: '5%',
+            fontFamily: 'Montserrat',
         },
         buttonsContainer: {
             flexDirection: 'row',
@@ -256,31 +258,41 @@ const Words = ({ route }) => {
             fontSize: 20,
             color: theme === 'dark' ? '#c7a0a0' : '#f1d7d7',
             padding: 10,
+            fontFamily: 'Montserrat',
+            fontWeight: "bold",
+            letterSpacing: 2,
         },
         greenButtonText: {
             fontSize: 20,
             color: theme === 'dark' ? '#94cb97' : '#d3f6d5',
             padding: 10,
+            fontFamily: 'Montserrat',
+            fontWeight: "bold",
+            letterSpacing: 2
         },
         sample: {
-            backgroundColor: '#4d347d',
+            // backgroundColor: '#4d347d',
+            backgroundColor: 'transparent',
             position: 'absolute',
             bottom: 0,
             right: 0,
-            borderRadius: 12,
-            margin: 9,
-            justifyContent: 'space-between'
-        },
-        sampleText: {
-            fontSize: 15,
+            borderRadius: 10,
             margin: 5,
-            color: theme === 'dark' ? 'black' : light
+            padding: 10
+            // justifyContent: 'space-between'
         },
+        // sampleText: {
+        //     fontSize: 15,
+        //     margin: 5,
+        //     // color: theme === 'dark' ? 'black' : light
+        //     // color: purple
+        // },
         iconStyle: {
             marginRight: '30%',
             margin: 30,
             padding: 20,
-            fontSize: 15,
+            fontSize: 20,
+            color: purple
         },
         starIcon: {
             position: 'absolute',
@@ -300,6 +312,7 @@ const Words = ({ route }) => {
             left: 0,
             paddingLeft: 15,
             paddingBottom: 5,
+            fontFamily: 'Montserrat',
         },
 
     })
@@ -311,8 +324,8 @@ const Words = ({ route }) => {
                 <View style={styles.wordContainer}>
                     <Text style={styles.wordText}>{word.verb}</Text>
                     <Text style={styles.knowledgeDegree}>Znajomość: {word.degree} id: {word.id}</Text>
-                    <TouchableOpacity style={styles.sample} onPress={() => speak(word.example)}>
-                        <Text style={styles.sampleText}><FontAwesome5 name="play" style={styles.iconStyle}/>Speech example</Text>
+                    <TouchableOpacity style={styles.sample} onPress={() => speak(word.verb)}>
+                        <Text><FontAwesome5 name="play" style={styles.iconStyle}/></Text>
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => {addFavourite(word)}} style={styles.starIcon}>
                         <FontAwesome name="star-o" size={30} color="black" />
@@ -328,6 +341,11 @@ const Words = ({ route }) => {
                     <>
                         <Text style={styles.exampleText}>{word.example}</Text>
                         <Text style={styles.exampleDescription}>Przykład</Text>
+                        {!isHighlighted &&
+                            <TouchableOpacity style={styles.sample} onPress={() => speak(word.example)}>
+                                <Text><FontAwesome5 name="play" style={styles.iconStyle}/></Text>
+                            </TouchableOpacity>
+                        }
                     </>
                 </TouchableOpacity>
                 <FontAwesome5 name="hand-point-left" style={styles.handIconStyle} onPress={toggleHighlighted}/>

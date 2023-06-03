@@ -1,4 +1,4 @@
-import {View, Text, StyleSheet, TouchableHighlight} from "react-native";
+import {View, Text, StyleSheet, TouchableHighlight, TouchableOpacity} from "react-native";
 import {useContext, useState} from "react";
 import { Ionicons } from '@expo/vector-icons';
 import AlphabeticalOrder from "./alphabetical-order";
@@ -6,22 +6,14 @@ import ListOfAllWords from "./list-of-all-words";
 import KnownWords from "./known-words";
 import { useNavigation } from "@react-navigation/native";
 import ThemeContext from "../context/themeContext";
+import {dark, darkerDark, darkText, light, backgroudLight, lightButtonColor, lightTextInButton, purple, brighterLight, itemText} from "../utils/colors"
+
 const Menu = ({ openMenu}) => {
 
     const { theme, toggleTheme } = useContext(ThemeContext);
     const [alphabetIsOpen, setAlphabetIsOpen] = useState(false);
     const [listOfAllWordsIsOpen, setListOfAllWordsIsOpen] = useState(false);
     const [knownWordsIsOpen, setKnownWordsIsOpen] = useState(false);
-
-    const dark = '#242129'
-    const darkerDark = '#1d1b22'
-    const darkLightText = '#9890a5'
-
-    const light = '#dad0e8'
-    const brighterLight = '#f5f1fa'
-    const lightButtonColor = '#242129'
-    const purple = '#4d347d'
-    const itemText = "#e1d0fc"
 
     const navigation = useNavigation();
 
@@ -66,9 +58,10 @@ const Menu = ({ openMenu}) => {
             backgroundColor: theme === 'dark' ? darkerDark : purple,
         },
         menuContainerItemText: {
-            color: theme === 'dark' ? darkLightText : brighterLight,
+            color: theme === 'dark' ? darkText : brighterLight,
             fontSize: 20,
             padding: 10,
+            fontFamily: 'Montserrat',
             // margin: 10,
         },
         menuTitle: {
@@ -77,6 +70,8 @@ const Menu = ({ openMenu}) => {
             color: theme === 'dark' ? itemText : purple,
             fontWeight: 'bold',
             textDecorationLine: 'underline',
+            fontFamily: 'Montserrat',
+            letterSpacing: 2
         },
         backIcon: {
             position: 'absolute',
@@ -85,14 +80,7 @@ const Menu = ({ openMenu}) => {
             margin: 15,
         },
     })
-    // const renderCaseView = (param) => {
-    //     switch (param) {
-    //         case "alphabet":
-    //             return <Text>xd</Text>;
-    //         default:
-    //
-    //     }
-    // }
+
     const handlePress = (param) => {
         if (param === 'alphabet') {
             setAlphabetIsOpen(!alphabetIsOpen)
@@ -141,14 +129,27 @@ const Menu = ({ openMenu}) => {
                 {listOfAllWordsIsOpen ? <ListOfAllWords theme={theme}/> : null}
                 {knownWordsIsOpen ? <KnownWords/> : null}
 
-                <TouchableHighlight
-                    style={styles.backIcon}
-                    onPress={handlePress}>
-                    {/*// onPress={navigateToHome}>*/}
-                    <Text>
-                        <Ionicons name="return-down-back" size={30} color={theme === 'dark' ? darkLightText : dark} />
-                    </Text>
-                </TouchableHighlight>
+
+                {!alphabetIsOpen && !listOfAllWordsIsOpen && !knownWordsIsOpen ?
+                    <TouchableOpacity
+                        style={styles.backIcon}
+                        onPress={navigateToHome}>
+                        {/*// onPress={navigateToHome}>*/}
+                        <Text>
+                            <Ionicons name="close-sharp" size={30} color={theme === 'dark' ? darkText : dark} />
+                        </Text>
+                    </TouchableOpacity>
+                        :
+                    <TouchableOpacity
+                        style={styles.backIcon}
+                        onPress={handlePress}>
+                        {/*// onPress={navigateToHome}>*/}
+                        <Text>
+                            <Ionicons name="return-down-back" size={30} color={theme === 'dark' ? darkText : dark} />
+                        </Text>
+                    </TouchableOpacity>
+                }
+
             </View>
         </View>
     )

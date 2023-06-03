@@ -64,18 +64,18 @@ const styles = StyleSheet.create({
         items: {
             paddingTop: 15,
             marginBottom: 10,
+            fontFamily: 'Montserrat',
 
         },
         verb: {
             fontWeight: 'bold',
             marginRight: 20,
-            color: purple
+            color: purple,
         },
 
         meaning: {
             // flex: 5,
-            color: "#7b6f8b"
-
+            color: "#7b6f8b",
         },
         loading: {
             flex: 2,

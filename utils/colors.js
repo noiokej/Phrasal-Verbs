@@ -9,5 +9,9 @@
 
     export const darkButtonColor = '#4d347d'
     export const darkTextInButton = '#dad0e8'
+    export const purple = '#4d347d'
+    export const brighterLight = '#f5f1fa'
+    export const itemText = "#e1d0fc"
 
-    export default {dark, darkerDark, darkText, darkButtonColor, darkTextInButton, light, backgroudLight, lightButtonColor, lightTextInButton}
+
+    export default {dark, darkerDark, darkText, darkButtonColor, darkTextInButton, light, backgroudLight, lightButtonColor, lightTextInButton, purple, brighterLight, itemText}

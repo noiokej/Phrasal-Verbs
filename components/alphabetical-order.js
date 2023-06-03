@@ -143,6 +143,7 @@ const AlphabeticalOrder = ({theme}) => {
         },
         alphabetItemText :{
             // borderRadius: 30
+
         },
         letterItem: {
             width: 60,
@@ -151,10 +152,12 @@ const AlphabeticalOrder = ({theme}) => {
             margin: 5,
             backgroundColor: purple,
             alignItems: "center",
-            justifyContent: "center"
+            justifyContent: "center",
         },
         letterItemText: {
-            color: theme === "dark" ? itemText : "white"
+            color: theme === "dark" ? itemText : "white",
+            fontFamily: 'Montserrat',
+            fontWeight: "bold"
         },
     })
 

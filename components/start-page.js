@@ -33,13 +33,24 @@ const StartPage = ({iterowanie, letter}) => {
         startButtonText: {
             fontSize: 20,
             color: darkTextInButton,
-        }
+            fontFamily: 'Montserrat',
+        },
+        letter: {
+            fontWeight: 'bold',
+            fontSize: 30,
+            marginBottom: 30,
+            fontFamily: 'Montserrat',
+        },
     })
 
     return (
         <View style={styles.start}>
             {letter &&
-            <Text>{letter}</Text>
+                <>
+                    <Text style={{fontFamily: 'Montserrat'}}>Losuj słowa rozpoczynające się na literę:</Text>
+                    <Text style={styles.letter}>{letter}</Text>
+                </>
+
             }
             <TouchableOpacity style={styles.startButton}>
                 <Text style={styles.startButtonText} onPress={iterowanie}
