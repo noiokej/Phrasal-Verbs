@@ -1,5 +1,5 @@
 import {useContext, useEffect, useState} from "react";
-import {StyleSheet, Text, TouchableHighlight, TouchableOpacity, View} from "react-native";
+import {StyleSheet, Text, TouchableHighlight, TouchableOpacity, View, Image} from "react-native";
 import * as Speech from "expo-speech";
 import {FontAwesome5, FontAwesome} from "@expo/vector-icons";
 import {LinearGradient} from "expo-linear-gradient";
@@ -47,7 +47,7 @@ const Words = ({ route }) => {
                 const array = []
                 let i = 0
                 for (const [key, value] of Object.entries(decks)) {
-                    array.push({verb:key, meaning:value[0], example:value[1], degree:0, id:i})
+                    array.push({verb:key, meaning:value[0], example:value[1], degree:0, id:i, note:'', favourite:0})
                     i+=1
                     await saveArrayToFile(array, 'Decks')
                     console.log("ITEROWANIE")
@@ -126,7 +126,40 @@ const Words = ({ route }) => {
             console.log('Wystąpił błąd podczas zmiany stopni:', error);
         return null;
         }
-};
+    };
+
+        const changeFavourite = async (word) => {
+            console.log('xd')
+            try {
+                console.log('zmiana fav')
+                // const fileUri = FileSystem.documentDirectory + 'Decks';
+                //
+                // const fileContent = await FileSystem.readAsStringAsync(fileUri);
+                // const array = JSON.parse(fileContent);
+
+                // console.log(array, "changedegree")
+
+                const updatedArray = array.map((item) => {
+                if (item.id === word.id) {
+                    const updatedFavourite = !item.favourite ;
+                    console.log(item, 'ITEM')
+                    return { ...item, favourite: updatedFavourite };
+                }
+
+                return item;
+                });
+                await saveArrayToFile(updatedArray);
+                setArray(updatedArray)
+                return updatedArray;
+            } catch (error) {
+                console.log('Wystąpił błąd podczas zmiany Favourite:', error);
+            return null;
+            }
+    };
+
+
+
+
     const nextWord = async (word, known) => {
         await changeDegree(word, known);
         // await drawRandom(Array);
@@ -314,6 +347,14 @@ const Words = ({ route }) => {
             paddingBottom: 5,
             fontFamily: 'Montserrat',
         },
+        notes: {
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            borderRadius: 10,
+            margin: 10,
+            padding: 10
+        }
 
     })
 
@@ -322,13 +363,27 @@ const Words = ({ route }) => {
         <View style={styles.container}>
             <View style={styles.contentContainer}>
                 <View style={styles.wordContainer}>
+                    <TouchableOpacity style={styles.notes} onPress={() => speak(word.verb)}>
+                        <Image
+                            source={require('../assets/note0.png')}
+                            style={{ width: 30, height: 30 }}
+                        />
+                    </TouchableOpacity>
                     <Text style={styles.wordText}>{word.verb}</Text>
                     <Text style={styles.knowledgeDegree}>Znajomość: {word.degree} id: {word.id}</Text>
                     <TouchableOpacity style={styles.sample} onPress={() => speak(word.verb)}>
                         <Text><FontAwesome5 name="play" style={styles.iconStyle}/></Text>
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={() => {addFavourite(word)}} style={styles.starIcon}>
-                        <FontAwesome name="star-o" size={30} color="black" />
+                    <TouchableOpacity onPress={() =>{
+                        changeFavourite(word)
+                        word.favourite = !word.favourite
+                    }} style={styles.starIcon}>
+                        {word.favourite?
+                            <FontAwesome name="star" size={30} color={purple} />
+                            :
+                            <FontAwesome name="star-o" size={30} color="black" />
+                        }
+
                     </TouchableOpacity>
                 </View>
                 <TouchableOpacity underlayColor={theme === 'dark' ? '#413e53' : backgroudLight} style={styles.meaningContainer} onPress={toggleHighlighted}>

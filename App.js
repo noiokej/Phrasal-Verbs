@@ -63,7 +63,7 @@ const [fontsLoaded] = useFonts({
     return null;
   }
     return (
-        <View style={{ flex: 1, fontFamily: 'Nexa' }} onLayout={onLayoutRootView}>
+        <View style={{ flex: 1, fontFamily: 'Montserrat' }} onLayout={onLayoutRootView}>
             <ThemeProvider>
                 <NavigationContainer>
                     <Stack.Navigator
