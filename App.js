@@ -26,7 +26,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
         alignItems: 'center',
         justifyContent: 'center',
-        fontFamily: 'Nexa'
+        fontFamily: 'Montserrat'
     },
 });
 const HomeScreen = () => {
@@ -51,17 +51,17 @@ const HomeScreen = () => {
 export default function App() {
 const [fontsLoaded] = useFonts({
     'Montserrat': require('./assets/fonts/Montserrat-Regular.ttf'),
-  });
+    });
 
-  const onLayoutRootView = useCallback(async () => {
-    if (fontsLoaded) {
-      await SplashScreen.hideAsync();
+    const onLayoutRootView = useCallback(async () => {
+        if (fontsLoaded) {
+            await SplashScreen.hideAsync();
+        }
+    }, [fontsLoaded]);
+
+    if (!fontsLoaded) {
+        return null;
     }
-  }, [fontsLoaded]);
-
-  if (!fontsLoaded) {
-    return null;
-  }
     return (
         <View style={{ flex: 1, fontFamily: 'Montserrat' }} onLayout={onLayoutRootView}>
             <ThemeProvider>

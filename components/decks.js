@@ -1,5 +1,5 @@
-import {useContext, useEffect, useState} from "react";
-import {StyleSheet, Text, TouchableHighlight, TouchableOpacity, View, Image} from "react-native";
+import {useContext, useEffect, useState, useRef} from "react";
+import {StyleSheet, Text, TouchableHighlight, TouchableOpacity, View, Image, TextInput} from "react-native";
 import * as Speech from "expo-speech";
 import {FontAwesome5, FontAwesome} from "@expo/vector-icons";
 import {LinearGradient} from "expo-linear-gradient";
@@ -10,7 +10,18 @@ import StartPage from "./start-page";
 import ThemeContext from "../context/themeContext";
 import {addFavourite} from "./favourite";
 import {checkPermission, checkFileExists, saveArrayToFile, readArrayFromFile} from "../utils/fileOperations"
-import {dark, darkerDark, darkText, light, backgroudLight, lightButtonColor, lightTextInButton, purple} from "../utils/colors"
+import {
+    dark,
+    darkerDark,
+    darkText,
+    light,
+    backgroudLight,
+    lightButtonColor,
+    lightTextInButton,
+    purple,
+    itemText
+} from "../utils/colors"
+import Modal from 'react-native-modal'
 
 
 // make up zle
@@ -23,11 +34,17 @@ const Words = ({ route }) => {
     const [word, setWord] = useState('');
     const { theme, toggleTheme } = useContext(ThemeContext);
     const [array, setArray] = useState(null)
+    const [isNoteVisible, setNoteVisible] = useState(false)
+    const [noteText, setNoteText] = useState('')
+
+    const noteInputRef = useRef(null);
+
+    const changeNoteValue = (notes) => {
+        noteInputRef.current.value = notes;
+    };
 
 
     const letter = route?.params?.letter;
-
-    console.log(letter, 'arrayOOOOO')
 
 
     const toggleHighlighted = () => {
@@ -129,16 +146,8 @@ const Words = ({ route }) => {
     };
 
         const changeFavourite = async (word) => {
-            console.log('xd')
             try {
                 console.log('zmiana fav')
-                // const fileUri = FileSystem.documentDirectory + 'Decks';
-                //
-                // const fileContent = await FileSystem.readAsStringAsync(fileUri);
-                // const array = JSON.parse(fileContent);
-
-                // console.log(array, "changedegree")
-
                 const updatedArray = array.map((item) => {
                 if (item.id === word.id) {
                     const updatedFavourite = !item.favourite ;
@@ -153,6 +162,28 @@ const Words = ({ route }) => {
                 return updatedArray;
             } catch (error) {
                 console.log('Wystąpił błąd podczas zmiany Favourite:', error);
+            return null;
+            }
+    };
+
+    const changeNote = async (word, note) => {
+
+            try {
+                console.log('zmiana note')
+                const updatedArray = array.map((item) => {
+                if (item.id === word.id) {
+                    const updatedNote = note ;
+                    console.log(item, 'ITEM')
+                    return { ...item, note: updatedNote };
+                }
+
+                return item;
+                });
+                await saveArrayToFile(updatedArray);
+                setArray(updatedArray)
+                return updatedArray;
+            } catch (error) {
+                console.log('Wystąpił błąd podczas zmiany Note:', error);
             return null;
             }
     };
@@ -354,7 +385,60 @@ const Words = ({ route }) => {
             borderRadius: 10,
             margin: 10,
             padding: 10
-        }
+        },
+        noteBox: {
+            backgroundColor: light,
+            height: '40%',
+            borderRadius: 20,
+            // marginTop: '20%',
+            paddingBottom: 4
+        },
+        noteText: {
+            margin: '1%',
+            textAlign: 'center',
+            // height: '80%',
+            flex: 4,
+            backgroundColor: 'white',
+            borderRadius: 20,
+        },
+         noteTextEdit: {
+            margin: '1%',
+            textAlign: 'center',
+            // height: '20%',
+             flex: 4,
+            backgroundColor: 'white',
+            borderRadius: 20,
+        },
+        noteOption: {
+            flexDirection: 'row',
+            justifyContent: 'space-around',
+            // backgroundColor: 'red',
+            flex: 1,
+            // height: '17%',
+            borderRadius: 20,
+            alignItems: 'center'
+        },
+        noteSave: {
+            height: '90%',
+            width: '30%',
+            // backgroundColor: '#bcadd0',
+            justifyContent: 'center',
+            alignItems: 'center',
+            borderRadius: 10,
+            borderWidth: 1,
+            borderColor: purple
+        },
+        noteCancel: {
+            height: '90%',
+            width: '30%',
+            backgroundColor: 'transparent',
+            justifyContent: 'center',
+            alignItems: 'center',
+            borderRadius: 10,
+            borderWidth: 1,
+            borderColor: '#887aa1'
+            // marginBottom: 4
+        },
 
     })
 
@@ -363,11 +447,22 @@ const Words = ({ route }) => {
         <View style={styles.container}>
             <View style={styles.contentContainer}>
                 <View style={styles.wordContainer}>
-                    <TouchableOpacity style={styles.notes} onPress={() => speak(word.verb)}>
-                        <Image
-                            source={require('../assets/note0.png')}
-                            style={{ width: 30, height: 30 }}
-                        />
+                    <TouchableOpacity style={styles.notes} onPress={() => {
+                        setNoteVisible(true)
+                        setNoteText(word.note)
+                    }}>
+                        {word.note?
+                            <Image
+                                source={require(`../assets/note1.png`)}
+                                style={{ width: 30, height: 30 }}
+                            />
+                            :
+                            <Image
+                                source={require(`../assets/note0.png`)}
+                                style={{ width: 30, height: 30 }}
+                            />
+                        }
+
                     </TouchableOpacity>
                     <Text style={styles.wordText}>{word.verb}</Text>
                     <Text style={styles.knowledgeDegree}>Znajomość: {word.degree} id: {word.id}</Text>
@@ -434,8 +529,58 @@ const Words = ({ route }) => {
                     </LinearGradient>
                 </View>
             </View>
-        </View>
+            <Modal
+                isVisible={isNoteVisible}
+                onBackdropPress={() => setNoteVisible(false)}
+                // backdropOpacity={0.8}
+                animationIn="zoomInDown"
+                animationOut="zoomOutUp"
+                // animationOut="slideOutUp"
+                animationInTiming={400}
+                animationOutTiming={500}
+                backdropTransitionInTiming={100}
+                backdropTransitionOutTiming={100}
+            >
 
+                <View style={styles.noteBox}>
+
+                        <TextInput
+                            ref={noteInputRef}
+                            style={styles.noteTextEdit}
+                            placeholder={`Dodaj notatkę do słowa "${word.verb}"`}
+                            onChangeText={setNoteText}
+                            value={noteText}
+                    />
+
+                    <View style={styles.noteOption}>
+                        <TouchableOpacity
+                            style={styles.noteCancel}
+                            onPress={() => setNoteVisible(false)}
+                        >
+                            <Text style={{color: '#887aa1'}}>
+                                Cancel
+                            </Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            style={styles.noteSave}
+                            onPress={() => {
+                                changeNote(word, noteText)
+                                word.note = noteText
+                                setNoteText(word.note)
+                                // setNoteVisible(false)
+                            }}
+                        >
+                            <Text style={{color: purple}}>
+                                Save
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
+
+                </View>
+
+            </Modal>
+        </View>
     )
     } else {
         return (
