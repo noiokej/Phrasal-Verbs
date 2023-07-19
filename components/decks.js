@@ -1,51 +1,28 @@
-import {useContext, useEffect, useState, useRef} from "react";
-import {StyleSheet, Text, TouchableHighlight, TouchableOpacity, View, Image, TextInput} from "react-native";
+import {useContext, useRef, useState} from "react";
+import {Image, StyleSheet, Text, TextInput, TouchableOpacity, View} from "react-native";
 import * as Speech from "expo-speech";
-import {FontAwesome5, FontAwesome} from "@expo/vector-icons";
+import {FontAwesome, FontAwesome5} from "@expo/vector-icons";
 import {LinearGradient} from "expo-linear-gradient";
-// import * as Location from "expo-location";
-import * as FileSystem from "expo-file-system";
 import StartPage from "./start-page";
-// import {useNavigation} from "@react-navigation/native";
 import ThemeContext from "../context/themeContext";
-import {addFavourite} from "./favourite";
-import {checkPermission, checkFileExists, saveArrayToFile, readArrayFromFile} from "../utils/fileOperations"
-import {
-    dark,
-    darkerDark,
-    darkText,
-    light,
-    backgroudLight,
-    lightButtonColor,
-    lightTextInButton,
-    purple,
-    itemText
-} from "../utils/colors"
+import {checkFileExists, readArrayFromFile, saveArrayToFile} from "../utils/fileOperations"
+import {backgroudLight, dark, darkerDark, darkText, light, purple,} from "../utils/colors"
 import Modal from 'react-native-modal'
 
-
-// make up zle
-var json = require('../sorted_data.json'); //(with path)
+var json = require('../sorted_data.json') //(with path)
 const decks = json
 
 const Words = ({ route }) => {
 
     const [isHighlighted, setIsHighlighted] = useState('none');
     const [word, setWord] = useState('');
-    const { theme, toggleTheme } = useContext(ThemeContext);
+    const { theme } = useContext(ThemeContext);
     const [array, setArray] = useState(null)
     const [isNoteVisible, setNoteVisible] = useState(false)
     const [noteText, setNoteText] = useState('')
 
-    const noteInputRef = useRef(null);
-
-    const changeNoteValue = (notes) => {
-        noteInputRef.current.value = notes;
-    };
-
-
-    const letter = route?.params?.letter;
-
+    const noteInputRef = useRef(null)
+    const letter = route?.params?.letter
 
     const toggleHighlighted = () => {
         setIsHighlighted(!isHighlighted);
@@ -53,21 +30,15 @@ const Words = ({ route }) => {
 
     const iterowanie = async () => {
         try {
-            await checkPermission()
-
             if (await checkFileExists()) {
                 console.log('istnieje')
-
-
             } else {
-                console.log('nie istnieje')
                 const array = []
                 let i = 0
                 for (const [key, value] of Object.entries(decks)) {
                     array.push({verb:key, meaning:value[0], example:value[1], degree:0, id:i, note:'', favourite:0})
                     i+=1
                     await saveArrayToFile(array, 'Decks')
-                    console.log("ITEROWANIE")
                 }
             }
             const newArray = await readArrayFromFile()
@@ -80,14 +51,8 @@ const Words = ({ route }) => {
     }
 
     const drawRandom = (array, word) => {
-        // console.log(word, "WORDDD")
         try {
-            // const random = Math.floor(Math.random() * array.length)
             if (letter) {
-                // console.log(array[1], array[2], 'arr 1 i 2')
-                // console.log(word, "WORD")
-                // const firstEl = array.find(el => el.verb[0] === letter)
-                // const lastEl = array.reverse().find(el => el.verb[0] === letter)
                 const verbs = array.filter(el => el.verb[0] === letter)
                 const firstEl = verbs[0].id
                 const lastEl = verbs[verbs.length - 1].id
@@ -96,7 +61,7 @@ const Words = ({ route }) => {
 
                 if (firstEl !== lastEl) {
                     while (random === word?.id) {
-                        random = Math.floor(Math.random() * (firstEl - lastEl + 1)) + lastEl;
+                        random = Math.floor(Math.random() * (lastEl - firstEl + 1)) + firstEl;
                     }
                 } else {
                     random = Math.floor(Math.random() * (firstEl - lastEl + 1)) + lastEl;
@@ -106,7 +71,6 @@ const Words = ({ route }) => {
 
             } else {
                 const random = Math.floor(Math.random() * 369)
-                console.log('DRAW RANDOm')
                 return array[random]
             }
 
@@ -118,67 +82,48 @@ const Words = ({ route }) => {
 
     const changeDegree = async (word, known) => {
         try {
-
-            // const fileUri = FileSystem.documentDirectory + 'Decks';
-            //
-            // const fileContent = await FileSystem.readAsStringAsync(fileUri);
-            // const array = JSON.parse(fileContent);
-
-            // console.log(array, "changedegree")
-
             const updatedArray = array.map((item) => {
             if (item.id === word.id) {
-                const updatedDegree = known ? item.degree + 1 : item.degree;
-                console.log(item, 'ITEM')
-                console.log(known, 'known')
-                return { ...item, degree: updatedDegree };
+                const updatedDegree = known ? item.degree + 1 : item.degree
+                return { ...item, degree: updatedDegree }
             }
-
-            return item;
-            });
-            await saveArrayToFile(updatedArray);
+            return item
+            })
+            await saveArrayToFile(updatedArray)
             setArray(updatedArray)
-            return updatedArray;
+            return updatedArray
         } catch (error) {
-            console.log('Wystąpił błąd podczas zmiany stopni:', error);
-        return null;
+            console.log('Wystąpił błąd podczas zmiany stopni:', error)
+        return null
         }
     };
 
-        const changeFavourite = async (word) => {
-            try {
-                console.log('zmiana fav')
-                const updatedArray = array.map((item) => {
+    const changeFavourite = async (word) => {
+        try {
+            const updatedArray = array.map((item) => {
                 if (item.id === word.id) {
-                    const updatedFavourite = !item.favourite ;
-                    console.log(item, 'ITEM')
-                    return { ...item, favourite: updatedFavourite };
+                    const updatedFavourite = !item.favourite
+                    return { ...item, favourite: updatedFavourite }
                 }
-
-                return item;
-                });
-                await saveArrayToFile(updatedArray);
-                setArray(updatedArray)
-                return updatedArray;
-            } catch (error) {
-                console.log('Wystąpił błąd podczas zmiany Favourite:', error);
-            return null;
-            }
-    };
+                return item
+            })
+            await saveArrayToFile(updatedArray)
+            setArray(updatedArray)
+            return updatedArray
+        } catch (error) {
+            console.log('Wystąpił błąd podczas zmiany Favourite:', error)
+        return null
+        }
+    }
 
     const changeNote = async (word, note) => {
-
             try {
-                console.log('zmiana note')
                 const updatedArray = array.map((item) => {
-                if (item.id === word.id) {
-                    const updatedNote = note ;
-                    console.log(item, 'ITEM')
-                    return { ...item, note: updatedNote };
-                }
-
-                return item;
-                });
+                    if (item.id === word.id) {
+                        return { ...item, note: note }
+                    }
+                    return item
+                })
                 await saveArrayToFile(updatedArray);
                 setArray(updatedArray)
                 return updatedArray;
@@ -189,24 +134,19 @@ const Words = ({ route }) => {
     };
 
 
-
-
     const nextWord = async (word, known) => {
         await changeDegree(word, known);
-        // await drawRandom(Array);
         const newArray = await readArrayFromFile();
         const newWord = await drawRandom(newArray, word);
         await setWord(newWord)
     }
 
     const speak = (text) => {
-
         Speech.speak(text, {
         language: 'en-GB',
-        voice: "en-gb-x-gbb-local" //spoko meski chyba najlepszy
-        });
-    };
-
+        voice: "en-gb-x-gbb-local"
+        })
+    }
 
     const styles = StyleSheet.create({
         container: {
@@ -469,25 +409,31 @@ const Words = ({ route }) => {
                     <TouchableOpacity style={styles.sample} onPress={() => speak(word.verb)}>
                         <Text><FontAwesome5 name="play" style={styles.iconStyle}/></Text>
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={() =>{
-                        changeFavourite(word)
-                        word.favourite = !word.favourite
-                    }} style={styles.starIcon}>
+                    <TouchableOpacity style={styles.starIcon}
+                                      onPress={() => {
+                                            changeFavourite(word)
+                                            word.favourite = !word.favourite
+                                        }}>
                         {word.favourite?
                             <FontAwesome name="star" size={30} color={purple} />
                             :
                             <FontAwesome name="star-o" size={30} color="black" />
                         }
-
                     </TouchableOpacity>
                 </View>
-                <TouchableOpacity underlayColor={theme === 'dark' ? '#413e53' : backgroudLight} style={styles.meaningContainer} onPress={toggleHighlighted}>
+                <TouchableOpacity
+                    underlayColor={theme === 'dark' ? '#413e53' : backgroudLight}
+                    style={styles.meaningContainer}
+                    onPress={toggleHighlighted}>
                     <>
                         <Text style={styles.meaningText}>{word.meaning}</Text>
                         <Text style={styles.meaningDescription}>Znaczenie</Text>
                     </>
                 </TouchableOpacity>
-                <TouchableOpacity underlayColor={theme === 'dark' ? '#413e53' : backgroudLight} style={styles.exampleContainer} onPress={toggleHighlighted}>
+                <TouchableOpacity
+                    underlayColor={theme === 'dark' ? '#413e53' : backgroudLight}
+                    style={styles.exampleContainer}
+                    onPress={toggleHighlighted}>
                     <>
                         <Text style={styles.exampleText}>{word.example}</Text>
                         <Text style={styles.exampleDescription}>Przykład</Text>
@@ -502,14 +448,12 @@ const Words = ({ route }) => {
                 <View style={styles.buttonsContainer}>
                     <LinearGradient
                         colors={theme === 'dark' ? ['#581616', '#7d2424', '#581616'] : ['#a01b1b', '#b43a3a', '#9c1717']}
-
                         style={{ flex: 1, borderRadius: 11, margin: 5 }}
                         >
                         <TouchableOpacity style={styles.redButton} onPress={async () => {
-                            setIsHighlighted('none')
-                            await nextWord(word, false)
-                        }
-                        }>
+                                setIsHighlighted('none')
+                                await nextWord(word, false)
+                            }}>
                             <Text style={styles.redButtonText}>Nie znam</Text>
                         </TouchableOpacity>
                     </LinearGradient>
@@ -532,18 +476,14 @@ const Words = ({ route }) => {
             <Modal
                 isVisible={isNoteVisible}
                 onBackdropPress={() => setNoteVisible(false)}
-                // backdropOpacity={0.8}
                 animationIn="zoomInDown"
                 animationOut="zoomOutUp"
-                // animationOut="slideOutUp"
                 animationInTiming={400}
                 animationOutTiming={500}
                 backdropTransitionInTiming={100}
                 backdropTransitionOutTiming={100}
             >
-
                 <View style={styles.noteBox}>
-
                         <TextInput
                             ref={noteInputRef}
                             style={styles.noteTextEdit}
@@ -584,18 +524,14 @@ const Words = ({ route }) => {
     )
     } else {
         return (
-
                 letter ? <StartPage
-                iterowanie = {iterowanie}
-                letter={letter}
+                    iterowanie = {iterowanie}
+                    letter={letter}
                 /> :
                 <StartPage
-                iterowanie = {iterowanie}
-
+                    iterowanie = {iterowanie}
                 />
-
         )
-
     }
 }
 

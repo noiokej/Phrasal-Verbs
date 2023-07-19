@@ -1,16 +1,14 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, Button } from 'react-native';
+import { StyleSheet, View} from 'react-native';
 import Words from "./components/decks";
 import TopBar from "./components/top-bar";
-import { LinearGradient } from 'expo-linear-gradient';
-import {useCallback, useEffect, useState} from "react";
+import {useCallback, useState} from "react";
 import Menu from "./components/menu";
 import {AppRegistry} from "react-native";
 import {NavigationContainer, useNavigation} from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import 'react-native-gesture-handler'
 import { ThemeProvider} from "./context/themeContext";
-import * as Font from 'expo-font';
 import {useFonts} from "expo-font";
 import * as SplashScreen from 'expo-splash-screen';
 
@@ -21,7 +19,6 @@ SplashScreen.preventAutoHideAsync();
 
 const styles = StyleSheet.create({
     container: {
-        // paddingTop: '10%',
         flex: 1,
         backgroundColor: '#fff',
         alignItems: 'center',
@@ -31,10 +28,8 @@ const styles = StyleSheet.create({
 });
 const HomeScreen = () => {
 
-
     const navigation = useNavigation();
     const [showMenu, setShowMenu] = useState(false);
-
 
     const openMenu = () => {
         setShowMenu(showMenu === false)
@@ -44,7 +39,9 @@ const HomeScreen = () => {
             <Words
                 navigation={navigation}
             />
+        <StatusBar backgroundColor={'#242129'} style={"light"}/>
         </View>
+
     );
 }
 
@@ -70,7 +67,7 @@ const [fontsLoaded] = useFonts({
                         screenOptions={{
                             headerTitle: () => <TopBar />,
                             headerStyle: {
-                                backgroundColor: '#f4511e',
+                                backgroundColor: '#242129',
                             },
                             headerTitleContainerStyle: { justifyContent: 'center', alignItems: 'center' },
                             headerLeft: null,

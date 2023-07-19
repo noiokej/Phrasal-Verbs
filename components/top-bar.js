@@ -1,19 +1,15 @@
 import {View, StyleSheet, Text} from "react-native";
 import { Ionicons } from '@expo/vector-icons';
-
 import {TouchableHighlight} from "react-native";
 import Menu from "./menu";
 import ThemeContext from "../context/themeContext";
-import {useContext, useState} from "react";
-import {useNavigation, useNavigationState, StackActions} from "@react-navigation/native";
+import {useContext} from "react";
+import {useNavigation, useNavigationState} from "@react-navigation/native";
 
 
-
-
-const TopBar = ({ openMenu, showMenu}) => {
+const TopBar = () => {
     const {theme, toggleTheme} = useContext(ThemeContext)
-    // const [navigationState, setNavigationState] = useState(null)
-    const navigationState = useNavigationState((state) => state);
+    const navigationState = useNavigationState((state) => state)
 
     const checkStateAndNavigate = () => {
         if (navigationState.routes[navigationState.index].name === "Menu") {
@@ -21,18 +17,12 @@ const TopBar = ({ openMenu, showMenu}) => {
     } else {
         navigation.navigate('Menu');
     }
-    };
-
-
+    }
 
     const navigateToHome = () => {
         navigation.goBack()
-    };
+    }
 
-    // const handleThemeChange = () => {
-    //     setTheme(theme === 'light' ? 'dark' : 'light')
-    // }
-    const brighterLight = '#f5f1fa'
     const navigation = useNavigation();
 
     return (
@@ -40,14 +30,18 @@ const TopBar = ({ openMenu, showMenu}) => {
         <View style={styles.topBarContainer}>
             <View style={styles.menu}>
                 <>
-                    <TouchableHighlight style={styles.changeTheme} underlayColor="transparent" onPress={toggleTheme}><Ionicons name={theme === 'dark' ? 'sunny-outline' : 'moon-outline'} size={30} color={'#e1d0fc'}/></TouchableHighlight>
+                    <TouchableHighlight
+                        style={styles.changeTheme}
+                        underlayColor="transparent"
+                        onPress={toggleTheme}>
+                            <Ionicons name={theme === 'dark' ? 'sunny-outline' : 'moon-outline'} size={30} color={'#e1d0fc'}/>
+                    </TouchableHighlight>
 
                     <TouchableHighlight style={styles.menuText} underlayColor="transparent" onPress={checkStateAndNavigate}>
                         <Text>
                             <Ionicons name="menu" size={30} color={'#e1d0fc'} />
                         </Text>
                     </TouchableHighlight>
-
                 </>
             </View>
         </View>
@@ -56,7 +50,6 @@ const TopBar = ({ openMenu, showMenu}) => {
 
 const styles = StyleSheet.create({
     topBarContainer: {
-        // backgroundColor: '#3c3561',
         backgroundColor: '#4d347d',
         flex: 1,
         width: '110%',
@@ -68,9 +61,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-
         width: '100%',
-        // flex: 1
     },
     menuText: {
         fontSize: 20,
@@ -80,7 +71,6 @@ const styles = StyleSheet.create({
     changeTheme: {
         marginLeft: 10,
     }
-
 })
 
 export default TopBar

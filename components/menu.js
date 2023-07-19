@@ -6,7 +6,9 @@ import ListOfAllWords from "./list-of-all-words";
 import KnownWords from "./known-words";
 import { useNavigation } from "@react-navigation/native";
 import ThemeContext from "../context/themeContext";
-import {dark, darkerDark, darkText, light, backgroudLight, lightButtonColor, lightTextInButton, purple, brighterLight, itemText} from "../utils/colors"
+import {dark, darkerDark, darkText, light, purple, itemText, backgroudLight} from "../utils/colors"
+import Favourite from "./favourite";
+import {FontAwesome} from "@expo/vector-icons";
 
 const Menu = ({ openMenu}) => {
 
@@ -14,6 +16,7 @@ const Menu = ({ openMenu}) => {
     const [alphabetIsOpen, setAlphabetIsOpen] = useState(false);
     const [listOfAllWordsIsOpen, setListOfAllWordsIsOpen] = useState(false);
     const [knownWordsIsOpen, setKnownWordsIsOpen] = useState(false);
+    const [favouriteIsOpen, setFavouriteIsOpen] = useState(false)
 
     const navigation = useNavigation();
 
@@ -21,18 +24,10 @@ const Menu = ({ openMenu}) => {
         navigation.goBack()
     };
 
-    const navigateToOtherComponent = () => {
-        // Pobierz obiekt nawigacji
-        const navigation = useNavigation();
-
-        // Wywołaj funkcję nawigacji do innego komponentu
-        navigation.navigate("Decks");
-    };
-
 
     const styles = StyleSheet.create({
         menu: {
-            backgroundColor: theme === 'dark' ? darkerDark : brighterLight,
+            backgroundColor: theme === 'dark' ? darkerDark : backgroudLight,
             flex: 11,
             width:'100%',
             justifyContent: 'center',
@@ -42,14 +37,11 @@ const Menu = ({ openMenu}) => {
             justifyContent: 'center',
             alignItems: 'center',
             backgroundColor: theme === 'dark' ? dark : light,
-            // flex: 1,
             width: '90%',
             height: '90%',
             borderRadius: 20
         },
         menuContainerItem: {
-            // height: 40,
-            // width: '70%',
             justifyContent: 'center',
             alignItems: 'center',
             borderRadius: 7,
@@ -58,11 +50,10 @@ const Menu = ({ openMenu}) => {
             backgroundColor: theme === 'dark' ? darkerDark : purple,
         },
         menuContainerItemText: {
-            color: theme === 'dark' ? darkText : brighterLight,
+            color: theme === 'dark' ? darkText : backgroudLight,
             fontSize: 20,
             padding: 10,
             fontFamily: 'Montserrat',
-            // margin: 10,
         },
         menuTitle: {
             fontSize: 25,
@@ -79,6 +70,12 @@ const Menu = ({ openMenu}) => {
             bottom: 0,
             margin: 15,
         },
+        starIcon: {
+            textDecorationLine: "none",
+            position: "absolute",
+            right: 20,
+            top: 15
+        }
     })
 
     const handlePress = (param) => {
@@ -88,22 +85,31 @@ const Menu = ({ openMenu}) => {
             setListOfAllWordsIsOpen(!listOfAllWordsIsOpen)
         } else if (param === 'known') {
             setKnownWordsIsOpen(!knownWordsIsOpen)
-        } else {
+        } else if (param === 'favourite') {
+            setFavouriteIsOpen(!favouriteIsOpen)
+        }
+         else {
             setKnownWordsIsOpen(false)
             setListOfAllWordsIsOpen(false)
             setAlphabetIsOpen(false)
+            setFavouriteIsOpen(false)
         }
-
     }
 
     return (
         <View style={styles.menu}>
-            <Text style={styles.menuTitle} onPress={openMenu}>{alphabetIsOpen ? "Wybierz literę" : "MENU"}</Text>
+            <Text style={styles.menuTitle} onPress={openMenu}>
+                {alphabetIsOpen ? "Wybierz literę" : 
+                knownWordsIsOpen ? "Znane słowa" : 
+                listOfAllWordsIsOpen ? "Lista wszystkich słów" : 
+                favouriteIsOpen ? "Ulubione" : 
+                "MENU"}
+            </Text>
+            {favouriteIsOpen ? <Text style={styles.starIcon}><FontAwesome name="star" size={30} color={purple} /></Text> : ""}
             <View style={styles.menuContainer}>
-                {!alphabetIsOpen && !listOfAllWordsIsOpen && !knownWordsIsOpen ? <>
+                {!alphabetIsOpen && !listOfAllWordsIsOpen && !knownWordsIsOpen &&!favouriteIsOpen ? <>
                 <TouchableHighlight
                     style={styles.menuContainerItem}
-                    // onPress={openMenu}
                     onPress={() => navigation.navigate("Words")}
                 >
                     <Text style={styles.menuContainerItemText}>Losuj słowa</Text>
@@ -123,18 +129,23 @@ const Menu = ({ openMenu}) => {
                     onPress={() => handlePress('known')}>
                     <Text style={styles.menuContainerItemText}>Nauczone słowa</Text>
                 </TouchableHighlight>
+                <TouchableHighlight
+                    style={styles.menuContainerItem}
+                    onPress={() => handlePress('favourite')}>
+                    <Text style={styles.menuContainerItemText}>Ulubione</Text>
+                </TouchableHighlight>
                 </>
                : null}
-                {alphabetIsOpen ? <AlphabeticalOrder theme={theme}/> : null }
-                {listOfAllWordsIsOpen ? <ListOfAllWords theme={theme}/> : null}
+                {alphabetIsOpen ? <AlphabeticalOrder/> : null }
+                {listOfAllWordsIsOpen ? <ListOfAllWords/> : null}
                 {knownWordsIsOpen ? <KnownWords/> : null}
+                {favouriteIsOpen ? <Favourite/> : null}
 
 
-                {!alphabetIsOpen && !listOfAllWordsIsOpen && !knownWordsIsOpen ?
+                {!alphabetIsOpen && !listOfAllWordsIsOpen && !knownWordsIsOpen && !favouriteIsOpen ?
                     <TouchableOpacity
                         style={styles.backIcon}
                         onPress={navigateToHome}>
-                        {/*// onPress={navigateToHome}>*/}
                         <Text>
                             <Ionicons name="close-sharp" size={30} color={theme === 'dark' ? darkText : dark} />
                         </Text>
@@ -143,13 +154,11 @@ const Menu = ({ openMenu}) => {
                     <TouchableOpacity
                         style={styles.backIcon}
                         onPress={handlePress}>
-                        {/*// onPress={navigateToHome}>*/}
                         <Text>
                             <Ionicons name="return-down-back" size={30} color={theme === 'dark' ? darkText : dark} />
                         </Text>
                     </TouchableOpacity>
                 }
-
             </View>
         </View>
     )
