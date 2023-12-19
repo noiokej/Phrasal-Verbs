@@ -1,13 +1,14 @@
 import {useContext, useRef, useState} from "react";
 import {Image, StyleSheet, Text, TextInput, TouchableOpacity, View} from "react-native";
 import * as Speech from "expo-speech";
-import {FontAwesome, FontAwesome5} from "@expo/vector-icons";
+import {FontAwesome, FontAwesome5, Ionicons} from "@expo/vector-icons";
 import {LinearGradient} from "expo-linear-gradient";
 import StartPage from "./start-page";
 import ThemeContext from "../context/themeContext";
 import {checkFileExists, readArrayFromFile, saveArrayToFile} from "../utils/fileOperations"
 import {backgroudLight, dark, darkerDark, darkText, light, purple,} from "../utils/colors"
 import Modal from 'react-native-modal'
+import {useNavigation} from "@react-navigation/native";
 
 var json = require('../sorted_data.json') //(with path)
 const decks = json
@@ -20,9 +21,20 @@ const Words = ({ route }) => {
     const [array, setArray] = useState(null)
     const [isNoteVisible, setNoteVisible] = useState(false)
     const [noteText, setNoteText] = useState('')
+    const [reverse, setReverse] = useState(null)
 
     const noteInputRef = useRef(null)
     const letter = route?.params?.letter
+
+    const navigation = useNavigation();
+
+    const navigateToHome = () => {
+        navigation.goBack()
+    };
+
+    const handleSetReverse = () => {
+        setReverse(!reverse)
+    }
 
     const toggleHighlighted = () => {
         setIsHighlighted(!isHighlighted);
@@ -58,6 +70,11 @@ const Words = ({ route }) => {
                 const lastEl = verbs[verbs.length - 1].id
 
                 let random = Math.floor(Math.random() * (lastEl - firstEl + 1)) + firstEl;
+
+                if (verbs.every(el => el.degree > 5)) {
+                    console.log("kazdy element jest wiekszy od 5, zwraca 'brak'")
+                    return 'brak'
+                }
 
                 if (firstEl !== lastEl) {
                     while (random === word?.id) {
@@ -138,7 +155,12 @@ const Words = ({ route }) => {
         await changeDegree(word, known);
         const newArray = await readArrayFromFile();
         const newWord = await drawRandom(newArray, word);
-        await setWord(newWord)
+        if (newWord === 'brak') {
+            console.log('w nextWord ustawiany jest brak')
+            await setWord(newWord)
+        } else {
+            await setWord(newWord)
+        }
     }
 
     const speak = (text) => {
@@ -172,7 +194,8 @@ const Words = ({ route }) => {
 
             paddingLeft: 10,
             paddingRight: 10,
-            margin: 20,
+            marginBottom: 5,
+            marginTop: 20,
             borderRadius: 32,
             elevation: 7,
             shadowColor: '#4d347d',
@@ -194,7 +217,7 @@ const Words = ({ route }) => {
             flex: 2,
             paddingLeft: 10,
             paddingRight: 10,
-            margin: 20,
+            margin: 5,
             borderRadius: 32,
             elevation: 7,
             shadowColor: '#4d347d',
@@ -379,10 +402,58 @@ const Words = ({ route }) => {
             borderColor: '#887aa1'
             // marginBottom: 4
         },
+        reverse: {
+
+        },
+        start: {
+            backgroundColor: theme === 'dark' ? dark : light,
+            flex: 11,
+            width: '100%',
+            justifyContent: 'center',
+            alignItems: 'center',
+            textAlign: "center"
+        },
+        startButton: {
+            backgroundColor: purple,
+            padding: 20,
+            margin: 10,
+            borderRadius: 10,
+            shadowColor: 'black',
+            shadowOffset: { width: 1, height: 1 },
+            shadowOpacity: 5,
+            elevation: 10,
+        },
+        startButtonText: {
+            fontSize: 20,
+            color: light,
+            fontFamily: 'Montserrat',
+        },
+        letter: {
+            fontWeight: 'bold',
+            fontSize: 30,
+            marginBottom: 30,
+            fontFamily: 'Montserrat',
+        },
 
     })
 
-    if (word) {
+    if (word === 'brak'){
+        return (
+        <View style={styles.start}>
+            {letter &&
+            <>
+                <Text style={{fontFamily: 'Montserrat', textAlign: "center"}}>Nauczyłeś się wszystkich czasowników frazowych na literę:</Text>
+                <Text style={styles.letter}>{letter}</Text>
+                <Text style={{fontFamily: 'Montserrat'}}>Wybierz inny zestaw:</Text>
+            </>
+            }
+                <TouchableOpacity style={styles.startButton} onPress={navigateToHome}>
+                    <Text style={styles.startButtonText}>Cofnij</Text>
+                </TouchableOpacity>
+        </View>
+        )
+
+    } else if (word) {
     return (
         <View style={styles.container}>
             <View style={styles.contentContainer}>
@@ -404,7 +475,7 @@ const Words = ({ route }) => {
                         }
 
                     </TouchableOpacity>
-                    <Text style={styles.wordText}>{word.verb}</Text>
+                    <Text style={styles.wordText}>{reverse? word.verb : word.meaning}</Text>
                     <Text style={styles.knowledgeDegree}>Znajomość: {word.degree} id: {word.id}</Text>
                     <TouchableOpacity style={styles.sample} onPress={() => speak(word.verb)}>
                         <Text><FontAwesome5 name="play" style={styles.iconStyle}/></Text>
@@ -421,12 +492,13 @@ const Words = ({ route }) => {
                         }
                     </TouchableOpacity>
                 </View>
+                <TouchableOpacity style={styles.reverse} onPress={handleSetReverse}><Ionicons name="swap-vertical" size={33} color={purple} /></TouchableOpacity>
                 <TouchableOpacity
                     underlayColor={theme === 'dark' ? '#413e53' : backgroudLight}
                     style={styles.meaningContainer}
                     onPress={toggleHighlighted}>
                     <>
-                        <Text style={styles.meaningText}>{word.meaning}</Text>
+                        <Text style={styles.meaningText}>{reverse? word.meaning : word.verb}</Text>
                         <Text style={styles.meaningDescription}>Znaczenie</Text>
                     </>
                 </TouchableOpacity>

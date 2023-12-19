@@ -1,7 +1,8 @@
-import {Text, View, StyleSheet, ActivityIndicator, FlatList} from "react-native";
-import { useEffect, useState } from "react";
+import {Text, View, StyleSheet, ActivityIndicator, FlatList, TouchableOpacity} from "react-native";
+import {useEffect, useRef, useState} from "react";
 import { readArrayFromFile } from "../utils/fileOperations";
 import { purple} from "../utils/colors";
+import {Ionicons} from "@expo/vector-icons";
 
 const styles = StyleSheet.create({
     container: {
@@ -61,6 +62,11 @@ const KnownWords = () => {
 
     const [array, setArray] = useState(null)
 
+    const handleChangeReverse = () => {
+        setArray([...array].reverse())
+    }
+
+    const flatListRef = useRef(null);
     useEffect(() => {
         const fetchData = async () => {
 
@@ -81,12 +87,12 @@ const KnownWords = () => {
     const renderItem = ({ item }) => {
         return (
          <Text style={styles.items}>
-         <Text 
-            style={item.degree === 1 ? styles.verb1 
-                : item.degree === 2 ? styles.verb2 
-                : item.degree === 3 ? styles.verb3 
-                : item.degree === 4 ? styles.verb4 
-                : item.degree === 5 ? styles.verb5 
+         <Text
+            style={item.degree === 1 ? styles.verb1
+                : item.degree === 2 ? styles.verb2
+                : item.degree === 3 ? styles.verb3
+                : item.degree === 4 ? styles.verb4
+                : item.degree >= 5 ? styles.verb5
                 : ""}>
             {item.verb}   </Text>
          <Text style={styles.meaning}>{item.meaning}</Text>
@@ -94,13 +100,14 @@ const KnownWords = () => {
          </Text>
          )
     }
-    
+
     const keyExtractor = (_, index) => index.toString()
 
     return (
         <View style={styles.container}>
             {array ? (
                 <FlatList
+                    ref={flatListRef}
                     data={array}
                     renderItem={renderItem}
                     keyExtractor={keyExtractor}
@@ -108,6 +115,9 @@ const KnownWords = () => {
                 ) : (
                     <View style={styles.loading}><ActivityIndicator size="large" color={purple} /></View>
                 )}
+            <TouchableOpacity onPress={handleChangeReverse}>
+                <Ionicons name="swap-vertical" size={24} color="black" />
+            </TouchableOpacity>
         </View>
     )
 }
