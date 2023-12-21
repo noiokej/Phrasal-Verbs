@@ -1,7 +1,7 @@
 import {Text, TouchableOpacity, View, StyleSheet} from "react-native";
 import ThemeContext from "../context/themeContext";
 import {useContext} from "react";
-import {dark, light, purple} from "../utils/colors"
+import {dark, darkText, light, purple} from "../utils/colors"
 
 
 const StartPage = ({iterowanie, letter}) => {
@@ -36,6 +36,11 @@ const StartPage = ({iterowanie, letter}) => {
             fontSize: 30,
             marginBottom: 30,
             fontFamily: 'Montserrat',
+            color: theme === "dark" ? darkText : "black"
+        },
+        text: {
+            fontFamily: 'Montserrat',
+            color: theme === "dark" ? darkText : "black"
         },
     })
 
@@ -43,7 +48,7 @@ const StartPage = ({iterowanie, letter}) => {
         <View style={styles.start}>
             {letter &&
                 <>
-                    <Text style={{fontFamily: 'Montserrat'}}>Losuj słowa rozpoczynające się na literę:</Text>
+                    <Text style={styles.text}>Losuj słowa rozpoczynające się na literę:</Text>
                     <Text style={styles.letter}>{letter}</Text>
                 </>
 

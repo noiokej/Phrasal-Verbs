@@ -13,11 +13,11 @@ import {useNavigation} from "@react-navigation/native";
 var json = require('../sorted_data.json') //(with path)
 const decks = json
 
-const Words = ({ route }) => {
+const Words = ({route}) => {
 
     const [isHighlighted, setIsHighlighted] = useState('none');
     const [word, setWord] = useState('');
-    const { theme } = useContext(ThemeContext);
+    const {theme} = useContext(ThemeContext);
     const [array, setArray] = useState(null)
     const [isNoteVisible, setNoteVisible] = useState(false)
     const [noteText, setNoteText] = useState('')
@@ -43,15 +43,24 @@ const Words = ({ route }) => {
     const iterowanie = async () => {
         try {
             if (await checkFileExists()) {
-                console.log('istnieje')
+                console.log('Baza słów istnieje')
             } else {
                 const array = []
                 let i = 0
                 for (const [key, value] of Object.entries(decks)) {
-                    array.push({verb:key, meaning:value[0], example:value[1], degree:0, id:i, note:'', favourite:0})
-                    i+=1
-                    await saveArrayToFile(array, 'Decks')
+                    array.push({
+                        verb: key,
+                        meaning: value[0],
+                        example: value[1],
+                        degree: 0,
+                        id: i,
+                        note: '',
+                        favourite: 0
+                    })
+                    i += 1
                 }
+                console.log('save')
+                await saveArrayToFile(array, 'Decks')
             }
             const newArray = await readArrayFromFile()
             const newWord = await drawRandom(newArray);
@@ -64,30 +73,31 @@ const Words = ({ route }) => {
 
     const drawRandom = (array, word) => {
         try {
-            if (letter) {
-                const verbs = array.filter(el => el.verb[0] === letter)
-                const firstEl = verbs[0].id
-                const lastEl = verbs[verbs.length - 1].id
-
-                let random = Math.floor(Math.random() * (lastEl - firstEl + 1)) + firstEl;
-
-                if (verbs.every(el => el.degree > 5)) {
+            let random = null
+            const draw = (tab) => {
+                let availableEls = tab.filter(el => el.degree < 5)
+                if (availableEls.length > 0) {
+                    let index = Math.floor(Math.random() * availableEls.length)
+                    random = availableEls[index].id
+                    while (availableEls.length > 1 && random === word?.id) {
+                        index = Math.floor(Math.random() * availableEls.length)
+                        random = availableEls[index].id
+                    }
+                    return random
+                } else {
                     console.log("kazdy element jest wiekszy od 5, zwraca 'brak'")
                     return 'brak'
                 }
-
-                if (firstEl !== lastEl) {
-                    while (random === word?.id) {
-                        random = Math.floor(Math.random() * (lastEl - firstEl + 1)) + firstEl;
-                    }
-                } else {
-                    random = Math.floor(Math.random() * (firstEl - lastEl + 1)) + lastEl;
-                }
-
-                return array[random]
-
+            }
+            if (letter) {
+                const verbs = array.filter(el => el.verb[0] === letter)
+                random = draw(verbs)
             } else {
-                const random = Math.floor(Math.random() * 369)
+                random = draw(array)
+            }
+            if (random === "brak") {
+                return random
+            } else {
                 return array[random]
             }
 
@@ -100,18 +110,18 @@ const Words = ({ route }) => {
     const changeDegree = async (word, known) => {
         try {
             const updatedArray = array.map((item) => {
-            if (item.id === word.id) {
-                const updatedDegree = known ? item.degree + 1 : item.degree
-                return { ...item, degree: updatedDegree }
-            }
-            return item
+                if (item.id === word.id) {
+                    const updatedDegree = known ? item.degree + 1 : item.degree
+                    return {...item, degree: updatedDegree}
+                }
+                return item
             })
             await saveArrayToFile(updatedArray)
             setArray(updatedArray)
             return updatedArray
         } catch (error) {
             console.log('Wystąpił błąd podczas zmiany stopni:', error)
-        return null
+            return null
         }
     };
 
@@ -120,7 +130,7 @@ const Words = ({ route }) => {
             const updatedArray = array.map((item) => {
                 if (item.id === word.id) {
                     const updatedFavourite = !item.favourite
-                    return { ...item, favourite: updatedFavourite }
+                    return {...item, favourite: updatedFavourite}
                 }
                 return item
             })
@@ -129,25 +139,25 @@ const Words = ({ route }) => {
             return updatedArray
         } catch (error) {
             console.log('Wystąpił błąd podczas zmiany Favourite:', error)
-        return null
+            return null
         }
     }
 
     const changeNote = async (word, note) => {
-            try {
-                const updatedArray = array.map((item) => {
-                    if (item.id === word.id) {
-                        return { ...item, note: note }
-                    }
-                    return item
-                })
-                await saveArrayToFile(updatedArray);
-                setArray(updatedArray)
-                return updatedArray;
-            } catch (error) {
-                console.log('Wystąpił błąd podczas zmiany Note:', error);
+        try {
+            const updatedArray = array.map((item) => {
+                if (item.id === word.id) {
+                    return {...item, note: note}
+                }
+                return item
+            })
+            await saveArrayToFile(updatedArray);
+            setArray(updatedArray)
+            return updatedArray;
+        } catch (error) {
+            console.log('Wystąpił błąd podczas zmiany Note:', error);
             return null;
-            }
+        }
     };
 
 
@@ -155,18 +165,13 @@ const Words = ({ route }) => {
         await changeDegree(word, known);
         const newArray = await readArrayFromFile();
         const newWord = await drawRandom(newArray, word);
-        if (newWord === 'brak') {
-            console.log('w nextWord ustawiany jest brak')
-            await setWord(newWord)
-        } else {
-            await setWord(newWord)
-        }
+        await setWord(newWord)
     }
 
     const speak = (text) => {
         Speech.speak(text, {
-        language: 'en-GB',
-        voice: "en-gb-x-gbb-local"
+            language: 'en-GB',
+            voice: "en-gb-x-gbb-local"
         })
     }
 
@@ -201,13 +206,12 @@ const Words = ({ route }) => {
             shadowColor: '#4d347d',
         },
         wordText: {
-            fontSize: 40,
+            fontSize: 31,
             color: theme === 'dark' ? darkText : dark,
             textAlign: 'center',
             fontFamily: 'Montserrat',
         },
         meaningContainer: {
-            // borderWidth: 1,
             borderColor: '#4d347d',
             borderWidth: isHighlighted ? 0 : 1,
             width: '90%',
@@ -228,7 +232,6 @@ const Words = ({ route }) => {
             marginLeft: '5%',
             marginRight: '5%',
             textAlign: 'center',
-            // color: '#b4a9ec',
             color: theme === 'dark' ? darkText : dark,
             fontFamily: 'Montserrat',
         },
@@ -236,6 +239,7 @@ const Words = ({ route }) => {
             position: 'absolute',
             top: '5%',
             fontFamily: 'Montserrat',
+            color: theme === 'dark' ? darkText : 'black',
         },
         exampleContainer: {
             borderWidth: isHighlighted ? 0 : 1,
@@ -244,7 +248,7 @@ const Words = ({ route }) => {
             alignItems: 'center',
             justifyContent: 'center',
             backgroundColor: theme === 'dark' ? dark : light,
-            flex:2,
+            flex: 2,
             paddingLeft: 10,
             paddingRight: 10,
             margin: 20,
@@ -263,11 +267,12 @@ const Words = ({ route }) => {
             position: 'absolute',
             top: '5%',
             fontFamily: 'Montserrat',
+            color: theme === 'dark' ? darkText : 'black',
         },
         buttonsContainer: {
             flexDirection: 'row',
             justifyContent: 'center',
-            flex:1,
+            flex: 1,
             borderRadius: 11,
         },
         redButton: {
@@ -298,7 +303,6 @@ const Words = ({ route }) => {
             letterSpacing: 2
         },
         sample: {
-            // backgroundColor: '#4d347d',
             backgroundColor: 'transparent',
             position: 'absolute',
             bottom: 0,
@@ -306,14 +310,7 @@ const Words = ({ route }) => {
             borderRadius: 10,
             margin: 5,
             padding: 10
-            // justifyContent: 'space-between'
         },
-        // sampleText: {
-        //     fontSize: 15,
-        //     margin: 5,
-        //     // color: theme === 'dark' ? 'black' : light
-        //     // color: purple
-        // },
         iconStyle: {
             marginRight: '30%',
             margin: 30,
@@ -340,6 +337,7 @@ const Words = ({ route }) => {
             paddingLeft: 15,
             paddingBottom: 5,
             fontFamily: 'Montserrat',
+            color: theme === 'dark' ? darkText : 'black'
         },
         notes: {
             position: 'absolute',
@@ -353,38 +351,32 @@ const Words = ({ route }) => {
             backgroundColor: light,
             height: '40%',
             borderRadius: 20,
-            // marginTop: '20%',
             paddingBottom: 4
         },
         noteText: {
             margin: '1%',
             textAlign: 'center',
-            // height: '80%',
             flex: 4,
             backgroundColor: 'white',
             borderRadius: 20,
         },
-         noteTextEdit: {
+        noteTextEdit: {
             margin: '1%',
             textAlign: 'center',
-            // height: '20%',
-             flex: 4,
+            flex: 4,
             backgroundColor: 'white',
             borderRadius: 20,
         },
         noteOption: {
             flexDirection: 'row',
             justifyContent: 'space-around',
-            // backgroundColor: 'red',
             flex: 1,
-            // height: '17%',
             borderRadius: 20,
             alignItems: 'center'
         },
         noteSave: {
             height: '90%',
             width: '30%',
-            // backgroundColor: '#bcadd0',
             justifyContent: 'center',
             alignItems: 'center',
             borderRadius: 10,
@@ -400,11 +392,8 @@ const Words = ({ route }) => {
             borderRadius: 10,
             borderWidth: 1,
             borderColor: '#887aa1'
-            // marginBottom: 4
         },
-        reverse: {
-
-        },
+        reverse: {},
         start: {
             backgroundColor: theme === 'dark' ? dark : light,
             flex: 11,
@@ -419,7 +408,7 @@ const Words = ({ route }) => {
             margin: 10,
             borderRadius: 10,
             shadowColor: 'black',
-            shadowOffset: { width: 1, height: 1 },
+            shadowOffset: {width: 1, height: 1},
             shadowOpacity: 5,
             elevation: 10,
         },
@@ -437,171 +426,182 @@ const Words = ({ route }) => {
 
     })
 
-    if (word === 'brak'){
+    if (word === 'brak') {
         return (
-        <View style={styles.start}>
-            {letter &&
-            <>
-                <Text style={{fontFamily: 'Montserrat', textAlign: "center"}}>Nauczyłeś się wszystkich czasowników frazowych na literę:</Text>
-                <Text style={styles.letter}>{letter}</Text>
-                <Text style={{fontFamily: 'Montserrat'}}>Wybierz inny zestaw:</Text>
-            </>
-            }
+            <View style={styles.start}>
+                {letter &&
+                <>
+                    <Text style={{fontFamily: 'Montserrat', textAlign: "center"}}>Nauczyłeś się wszystkich czasowników
+                        frazowych na literę:</Text>
+                    <Text style={styles.letter}>{letter}</Text>
+                    <Text style={{fontFamily: 'Montserrat'}}>Wybierz inny zestaw:</Text>
+                </>
+                }
                 <TouchableOpacity style={styles.startButton} onPress={navigateToHome}>
                     <Text style={styles.startButtonText}>Cofnij</Text>
                 </TouchableOpacity>
-        </View>
+            </View>
         )
 
     } else if (word) {
-    return (
-        <View style={styles.container}>
-            <View style={styles.contentContainer}>
-                <View style={styles.wordContainer}>
-                    <TouchableOpacity style={styles.notes} onPress={() => {
-                        setNoteVisible(true)
-                        setNoteText(word.note)
-                    }}>
-                        {word.note?
-                            <Image
-                                source={require(`../assets/note1.png`)}
-                                style={{ width: 30, height: 30 }}
-                            />
-                            :
-                            <Image
-                                source={require(`../assets/note0.png`)}
-                                style={{ width: 30, height: 30 }}
-                            />
-                        }
+        return (
+            <View style={styles.container}>
+                <View style={styles.contentContainer}>
+                    <View style={styles.wordContainer}>
+                        <TouchableOpacity style={styles.notes} onPress={() => {
+                            setNoteVisible(true)
+                            setNoteText(word.note)
+                        }}>
+                            {word.note ?
+                                <Image
+                                    source={require(`../assets/note1.png`)}
+                                    style={{width: 30, height: 30}}
+                                />
+                                :
+                                <Image
+                                    source={require(`../assets/note0.png`)}
+                                    style={{width: 30, height: 30}}
+                                />
+                            }
 
+                        </TouchableOpacity>
+                        <Text style={styles.wordText}>{reverse ? word.verb : word.meaning}</Text>
+                        <Text style={styles.knowledgeDegree}>Znajomość: {word.degree} id: {word.id}</Text>
+                        {reverse ?
+                            <TouchableOpacity style={styles.sample} onPress={() => speak(word.verb)}>
+                                <Text><FontAwesome5 name="play" style={styles.iconStyle}/></Text>
+                            </TouchableOpacity>
+                            : null}
+
+                        <TouchableOpacity style={styles.starIcon}
+                                          onPress={() => {
+                                              changeFavourite(word)
+                                              word.favourite = !word.favourite
+                                          }}>
+                            {word.favourite ?
+                                <FontAwesome name="star" size={30} color={purple}/>
+                                :
+                                <FontAwesome name="star-o" size={30} color={theme === 'dark' ? purple : 'black'}/>
+                            }
+                        </TouchableOpacity>
+                    </View>
+                    <TouchableOpacity style={styles.reverse} onPress={handleSetReverse}><Ionicons name="swap-vertical"
+                                                                                                  size={33}
+                                                                                                  color={purple}/></TouchableOpacity>
+                    <TouchableOpacity
+                        underlayColor={theme === 'dark' ? '#413e53' : backgroudLight}
+                        style={styles.meaningContainer}
+                        onPress={toggleHighlighted}>
+                        <>
+                            <Text style={styles.meaningText}>{reverse ? word.meaning : word.verb}</Text>
+                            <Text style={styles.meaningDescription}>Znaczenie</Text>
+                            {!reverse && !isHighlighted ?
+                                <TouchableOpacity style={styles.sample} onPress={() => speak(word.verb)}>
+                                    <Text><FontAwesome5 name="play" style={styles.iconStyle}/></Text>
+                                </TouchableOpacity>
+                                : null}
+                        </>
                     </TouchableOpacity>
-                    <Text style={styles.wordText}>{reverse? word.verb : word.meaning}</Text>
-                    <Text style={styles.knowledgeDegree}>Znajomość: {word.degree} id: {word.id}</Text>
-                    <TouchableOpacity style={styles.sample} onPress={() => speak(word.verb)}>
-                        <Text><FontAwesome5 name="play" style={styles.iconStyle}/></Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.starIcon}
-                                      onPress={() => {
-                                            changeFavourite(word)
-                                            word.favourite = !word.favourite
-                                        }}>
-                        {word.favourite?
-                            <FontAwesome name="star" size={30} color={purple} />
-                            :
-                            <FontAwesome name="star-o" size={30} color="black" />
-                        }
-                    </TouchableOpacity>
-                </View>
-                <TouchableOpacity style={styles.reverse} onPress={handleSetReverse}><Ionicons name="swap-vertical" size={33} color={purple} /></TouchableOpacity>
-                <TouchableOpacity
-                    underlayColor={theme === 'dark' ? '#413e53' : backgroudLight}
-                    style={styles.meaningContainer}
-                    onPress={toggleHighlighted}>
-                    <>
-                        <Text style={styles.meaningText}>{reverse? word.meaning : word.verb}</Text>
-                        <Text style={styles.meaningDescription}>Znaczenie</Text>
-                    </>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    underlayColor={theme === 'dark' ? '#413e53' : backgroudLight}
-                    style={styles.exampleContainer}
-                    onPress={toggleHighlighted}>
-                    <>
-                        <Text style={styles.exampleText}>{word.example}</Text>
-                        <Text style={styles.exampleDescription}>Przykład</Text>
-                        {!isHighlighted &&
+                    <TouchableOpacity
+                        underlayColor={theme === 'dark' ? '#413e53' : backgroudLight}
+                        style={styles.exampleContainer}
+                        onPress={toggleHighlighted}>
+                        <>
+                            <Text style={styles.exampleText}>{word.example}</Text>
+                            <Text style={styles.exampleDescription}>Przykład</Text>
+                            {!isHighlighted &&
                             <TouchableOpacity style={styles.sample} onPress={() => speak(word.example)}>
                                 <Text><FontAwesome5 name="play" style={styles.iconStyle}/></Text>
                             </TouchableOpacity>
-                        }
-                    </>
-                </TouchableOpacity>
-                <FontAwesome5 name="hand-point-left" style={styles.handIconStyle} onPress={toggleHighlighted}/>
-                <View style={styles.buttonsContainer}>
-                    <LinearGradient
-                        colors={theme === 'dark' ? ['#581616', '#7d2424', '#581616'] : ['#a01b1b', '#b43a3a', '#9c1717']}
-                        style={{ flex: 1, borderRadius: 11, margin: 5 }}
+                            }
+                        </>
+                    </TouchableOpacity>
+                    <FontAwesome5 name="hand-point-left" style={styles.handIconStyle} onPress={toggleHighlighted}/>
+                    <View style={styles.buttonsContainer}>
+                        <LinearGradient
+                            colors={theme === 'dark' ? ['#581616', '#7d2424', '#581616'] : ['#a01b1b', '#b43a3a', '#9c1717']}
+                            style={{flex: 1, borderRadius: 11, margin: 5}}
                         >
-                        <TouchableOpacity style={styles.redButton} onPress={async () => {
+                            <TouchableOpacity style={styles.redButton} onPress={async () => {
                                 setIsHighlighted('none')
                                 await nextWord(word, false)
                             }}>
-                            <Text style={styles.redButtonText}>Nie znam</Text>
-                        </TouchableOpacity>
-                    </LinearGradient>
+                                <Text style={styles.redButtonText}>Nie znam</Text>
+                            </TouchableOpacity>
+                        </LinearGradient>
 
-                    <LinearGradient
-                        colors={theme === 'dark' ? ['#104212', '#155518', '#104212'] : ['#147d18', '#1b9921', '#19841e']}
-                        style={{ flex: 1, borderRadius: 11, margin: 5}}
+                        <LinearGradient
+                            colors={theme === 'dark' ? ['#104212', '#155518', '#104212'] : ['#147d18', '#1b9921', '#19841e']}
+                            style={{flex: 1, borderRadius: 11, margin: 5}}
                         >
-                        <TouchableOpacity style={styles.greenButton} onPress={async () => {
-                            setIsHighlighted('none')
-                            await nextWord(word, true)
-                            console.log('next')
+                            <TouchableOpacity style={styles.greenButton} onPress={async () => {
+                                setIsHighlighted('none')
+                                await nextWord(word, true)
+                                console.log('next')
                             }
-                        }>
-                            <Text style={styles.greenButtonText}>Znam</Text>
-                        </TouchableOpacity>
-                    </LinearGradient>
+                            }>
+                                <Text style={styles.greenButtonText}>Znam</Text>
+                            </TouchableOpacity>
+                        </LinearGradient>
+                    </View>
                 </View>
-            </View>
-            <Modal
-                isVisible={isNoteVisible}
-                onBackdropPress={() => setNoteVisible(false)}
-                animationIn="zoomInDown"
-                animationOut="zoomOutUp"
-                animationInTiming={400}
-                animationOutTiming={500}
-                backdropTransitionInTiming={100}
-                backdropTransitionOutTiming={100}
-            >
-                <View style={styles.noteBox}>
+                <Modal
+                    isVisible={isNoteVisible}
+                    onBackdropPress={() => setNoteVisible(false)}
+                    animationIn="zoomInDown"
+                    animationOut="zoomOutUp"
+                    animationInTiming={400}
+                    animationOutTiming={500}
+                    backdropTransitionInTiming={100}
+                    backdropTransitionOutTiming={100}
+                >
+                    <View style={styles.noteBox}>
                         <TextInput
                             ref={noteInputRef}
                             style={styles.noteTextEdit}
                             placeholder={`Dodaj notatkę do słowa "${word.verb}"`}
                             onChangeText={setNoteText}
                             value={noteText}
-                    />
+                        />
 
-                    <View style={styles.noteOption}>
-                        <TouchableOpacity
-                            style={styles.noteCancel}
-                            onPress={() => setNoteVisible(false)}
-                        >
-                            <Text style={{color: '#887aa1'}}>
-                                Cancel
-                            </Text>
-                        </TouchableOpacity>
+                        <View style={styles.noteOption}>
+                            <TouchableOpacity
+                                style={styles.noteCancel}
+                                onPress={() => setNoteVisible(false)}
+                            >
+                                <Text style={{color: '#887aa1'}}>
+                                    Cancel
+                                </Text>
+                            </TouchableOpacity>
 
-                        <TouchableOpacity
-                            style={styles.noteSave}
-                            onPress={() => {
-                                changeNote(word, noteText)
-                                word.note = noteText
-                                setNoteText(word.note)
-                                // setNoteVisible(false)
-                            }}
-                        >
-                            <Text style={{color: purple}}>
-                                Save
-                            </Text>
-                        </TouchableOpacity>
+                            <TouchableOpacity
+                                style={styles.noteSave}
+                                onPress={() => {
+                                    changeNote(word, noteText)
+                                    word.note = noteText
+                                    setNoteText(word.note)
+                                    // setNoteVisible(false)
+                                }}
+                            >
+                                <Text style={{color: purple}}>
+                                    Save
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
+
                     </View>
 
-                </View>
-
-            </Modal>
-        </View>
-    )
+                </Modal>
+            </View>
+        )
     } else {
         return (
-                letter ? <StartPage
-                    iterowanie = {iterowanie}
+            letter ? <StartPage
+                    iterowanie={iterowanie}
                     letter={letter}
                 /> :
                 <StartPage
-                    iterowanie = {iterowanie}
+                    iterowanie={iterowanie}
                 />
         )
     }

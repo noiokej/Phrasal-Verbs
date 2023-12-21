@@ -14,31 +14,31 @@ import * as FileSystem from "expo-file-system";
 //     }
 
 export const checkFileExists = async () => {
-        try {
-            const fileInfo = await FileSystem.getInfoAsync(FileSystem.documentDirectory + 'Decks')
-            return fileInfo.exists
+    try {
+        const fileInfo = await FileSystem.getInfoAsync(FileSystem.documentDirectory + 'Decks')
+        return fileInfo.exists
 
-        } catch (error) {
-            console.error('Błąd podczas sprawdzania pliku:', error)
-        }
+    } catch (error) {
+        console.error('Błąd podczas sprawdzania pliku:', error)
     }
+}
 
 export const saveArrayToFile = async (array) => {
-        try {
-            // await checkPermission()
-            const fileUri = FileSystem.documentDirectory + 'Decks'
-            // Konwertuj tablicę na format tekstowy
-            // array.sort((a, b) => b.id - a.id)
-            const arrayText = JSON.stringify(array)
-            // Zapisz tablicę do pliku
-            await FileSystem.writeAsStringAsync(fileUri, arrayText)
+    try {
+        // await checkPermission()
+        const fileUri = FileSystem.documentDirectory + 'Decks'
+        // Konwertuj tablicę na format tekstowy
+        // array.sort((a, b) => b.id - a.id)
+        const arrayText = JSON.stringify(array)
+        // Zapisz tablicę do pliku
+        await FileSystem.writeAsStringAsync(fileUri, arrayText)
 
-            console.log('Tablica została zapisana do pliku.')
-            // return array
-        } catch (error) {
-            console.log('Wystąpił błąd podczas zapisywania tablicy do pliku:', error)
-        }
+        console.log('Tablica została zapisana do pliku.')
+        // return array
+    } catch (error) {
+        console.log('Wystąpił błąd podczas zapisywania tablicy do pliku:', error)
     }
+}
 
 export const readArrayFromFile = async () => {
     try {
